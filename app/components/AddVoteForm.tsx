@@ -49,7 +49,7 @@ export default function AddVoteForm() {
   useEffect(() => {
     const fetchExistingObjects = async () => {
       try {
-        const response = await fetch(`/api/objects?type=${formData.type}`);
+        const response = await fetch(`/api/vote-items?type=${formData.type}`);
         if (response.ok) {
           const data = await response.json();
           setExistingObjects(data);

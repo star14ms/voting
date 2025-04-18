@@ -16,8 +16,7 @@ model Vote {
   updatedAt DateTime       @updatedAt
   startDate DateTime       @default(now())
   endDate   DateTime
-  items     VoteItem[]
-  itemVotes VoteItemVote[]
+  voteItemVote VoteItemVote[]
 }
 
 model VoteItem {
@@ -25,11 +24,9 @@ model VoteItem {
   name        String
   description String
   image       String
-  voteId      Int
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
-  vote        Vote           @relation(fields: [voteId], references: [id])
-  itemVotes   VoteItemVote[]
+  voteItemVote VoteItemVote[]
 }
 
 model VoteItemVote {
@@ -37,8 +34,6 @@ model VoteItemVote {
   voteItemId Int
   voteId     Int
   voteCount  Int      @default(0)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
   vote       Vote     @relation(fields: [voteId], references: [id])
   voteItem   VoteItem @relation(fields: [voteItemId], references: [id])
 

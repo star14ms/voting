@@ -10,7 +10,10 @@ export async function POST(request: Request) {
     const startDate = formData.get('startDate') as string;
     const endDate = formData.get('endDate') as string;
     const image = formData.get('image') as string;
-    const selectedItems = formData.getAll('selectedItems') as string[];
+    
+    // Get existing items IDs if any
+    const existingItemsStr = formData.get('existingItems');
+    const existingItems = existingItemsStr ? JSON.parse(existingItemsStr as string) : [];
 
     // Create the vote
     const vote = await prisma.vote.create({
@@ -20,20 +23,65 @@ export async function POST(request: Request) {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         image,
-      } as Prisma.VoteCreateInput,
+      },
     });
 
-    // Connect selected items to the vote
-    for (const itemId of selectedItems) {
+    // Handle existing items
+    for (const itemId of existingItems) {
       await prisma.voteItemVote.create({
         data: {
           voteId: vote.id,
-          voteItemId: parseInt(itemId),
-        },
+          voteItemId: itemId,
+          voteCount: 0
+        }
       });
     }
 
-    return NextResponse.json(vote);
+    // Handle new or modified items
+    const itemKeys = Array.from(formData.keys())
+      .filter(key => key.startsWith('items['))
+      .map(key => key.match(/items\[(\d+)\]/)?.[1])
+      .filter((value, index, self) => value && self.indexOf(value) === index);
+
+    for (const index of itemKeys) {
+      const name = formData.get(`items[${index}].name`) as string;
+      const description = formData.get(`items[${index}].description`) as string;
+      const image = formData.get(`items[${index}].image`) as string;
+
+      if (name && description && image) {
+        // Create new vote item
+        const voteItem = await prisma.voteItem.create({
+          data: {
+            name,
+            description,
+            image
+          }
+        });
+
+        // Link it to the vote
+        await prisma.voteItemVote.create({
+          data: {
+            voteId: vote.id,
+            voteItemId: voteItem.id,
+            voteCount: 0
+          }
+        });
+      }
+    }
+
+    // Return the created vote with all its items
+    const createdVote = await prisma.vote.findUnique({
+      where: { id: vote.id },
+      include: {
+        voteItemVote: {
+          include: {
+            voteItem: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json(createdVote);
   } catch (error) {
     console.error('Error creating vote:', error);
     return NextResponse.json(
@@ -47,12 +95,15 @@ export async function GET() {
   try {
     const votes = await prisma.vote.findMany({
       include: {
-        items: {
+        voteItemVote: {
           include: {
-            itemVotes: true,
-          },
-        },
+            voteItem: true
+          }
+        }
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
 
     return NextResponse.json(votes);

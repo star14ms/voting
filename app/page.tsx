@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { getPublicUrl } from '@/lib/s3';
 
 type VoteItem = {
   id: number;
   name: string;
   description: string;
   image: string;
-  voteCount: number;
 };
 
 type Vote = {
@@ -19,8 +19,30 @@ type Vote = {
   image: string;
   startDate: string;
   endDate: string;
-  items: VoteItem[];
+  voteItemVote: {
+    id: number;
+    voteCount: number;
+    voteItem: VoteItem;
+  }[];
 };
+
+function SkeletonVoteCard() {
+  return (
+    <div className="bg-white rounded-xl shadow">
+      <div className="relative h-48 bg-gray-200 animate-pulse rounded-t-xl" />
+      <div className="p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="bg-gray-200 h-6 w-12 rounded animate-pulse" />
+          <div className="h-6 bg-gray-200 rounded w-32 animate-pulse" />
+        </div>
+        <div className="h-4 bg-gray-200 rounded w-3/4 mb-2 animate-pulse" />
+        <div className="mt-4 flex justify-end">
+          <div className="h-4 bg-gray-200 rounded w-48 animate-pulse" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
   const [votes, setVotes] = useState<Vote[]>([]);
@@ -51,27 +73,6 @@ export default function Home() {
     return diffDays;
   };
 
-  const getVoteTitle = (vote: Vote) => {
-    const today = new Date();
-    const startDate = new Date(vote.startDate);
-    const endDate = new Date(vote.endDate);
-    
-    // Calculate the number of days between start and end
-    const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Calculate the current day in the voting period
-    const currentDay = Math.ceil((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Calculate the round number (assuming each round is 7 days)
-    const roundNumber = Math.floor(currentDay / 7) + 1;
-    
-    if (vote.type === 'CELEBRITY') {
-      return `남자배우 ${roundNumber}차`;
-    } else {
-      return `트로트스타 남자 ${roundNumber}차`;
-    }
-  };
-
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
       <div className="w-full max-w-6xl">
@@ -92,21 +93,24 @@ export default function Home() {
             </Link>
           </div>
         </div>
-        {isLoading ? (
-          <div className="flex justify-center items-center min-h-[400px]">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {votes.map((vote) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {isLoading ? (
+            <>
+              <SkeletonVoteCard />
+              <SkeletonVoteCard />
+              <SkeletonVoteCard />
+              <SkeletonVoteCard />
+            </>
+          ) : (
+            votes.map((vote) => (
               <Link
                 key={vote.id}
                 href={`/votes/${vote.id}`}
                 className="bg-white rounded-xl shadow hover:shadow-lg transition-shadow"
-              >
+              > 
                 <div className="relative h-48">
                   <Image
-                    src={vote.image}
+                    src={getPublicUrl(vote.image)}
                     alt={vote.title}
                     fill
                     className="object-cover rounded-t-xl"
@@ -119,7 +123,7 @@ export default function Home() {
                     <span className="bg-red-100 text-red-500 text-sm px-2 py-1 rounded">
                       D-{calculateDday(vote.endDate)}
                     </span>
-                    <h2 className="text-lg font-semibold">{getVoteTitle(vote)}</h2>
+                    <h2 className="text-lg font-semibold">{vote.title}</h2>
                   </div>
                   <p className="text-gray-600">{vote.title}</p>
                   <div className="mt-4 flex justify-end text-sm text-gray-500">
@@ -127,9 +131,9 @@ export default function Home() {
                   </div>
                 </div>
               </Link>
-            ))}
-          </div>
-        )}
+            ))
+          )}
+        </div>
       </div>
     </main>
   );

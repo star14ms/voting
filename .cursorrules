@@ -5,6 +5,17 @@
 - New rules should be added as they are discovered
 - Keep this file updated with any new project settings or constraints
 
+## Language
+- All user-facing text in the web interface must be in Korean
+- This includes:
+  - Error messages
+  - Button labels
+  - Page titles
+  - Form labels
+  - Alert messages
+  - Confirmation dialogs
+- Console logs and technical messages can remain in English
+
 ## Database
 - Using Prisma with Neon (PostgreSQL) as the cloud database
 - Database URL is stored in environment variables
