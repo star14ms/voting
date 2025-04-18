@@ -1,11 +1,9 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import VoteItemForm from '../../../components/VoteItemForm';
 import Link from 'next/link';
 import Image from 'next/image';
-import SelectVoteItemModal from '../../../components/SelectVoteItemModal';
+import SelectVoteItemModal from '@/components/SelectVoteItemModal';
 import { getPublicUrl } from '@/lib/s3';
 
 type VoteItem = {
@@ -45,20 +43,6 @@ export default function CreateVotePage() {
 
   const [startDate, setStartDate] = useState(formatDate(today));
   const [endDate, setEndDate] = useState(formatDate(twoWeeksLater));
-  const [selectedItems, setSelectedItems] = useState<number[]>([]);
-
-  const fetchVoteItems = async () => {
-    try {
-      const response = await fetch('/api/vote-items');
-      if (!response.ok) {
-        throw new Error('Failed to fetch vote items');
-      }
-      const data = await response.json();
-      setExistingVoteItems(data);
-    } catch (err) {
-      console.error('Error fetching vote items:', err);
-    }
-  };
 
   const handleSelectExistingItem = (item: ExistingVoteItem) => {
     if (selectedItemIndex !== null) {

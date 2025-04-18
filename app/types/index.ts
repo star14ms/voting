@@ -3,8 +3,8 @@ export type VoteItem = {
   name: string;
   description: string;
   image: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 };
 
 export type VoteItemVote = {
@@ -20,9 +20,9 @@ export type Vote = {
   title: string;
   type: string;
   image: string;
-  startDate: Date;
-  endDate: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+  updatedAt: string;
   voteItemVote: VoteItemVote[];
 }; 

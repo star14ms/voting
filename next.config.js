@@ -14,7 +14,7 @@ const nextConfig = {
         pathname: '/images/**',
       }
     ],
-  },
+  }
 }
 
-export default nextConfig 
+module.exports = nextConfig 

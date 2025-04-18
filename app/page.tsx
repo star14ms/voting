@@ -4,27 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getPublicUrl } from '@/lib/s3';
-
-type VoteItem = {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-};
-
-type Vote = {
-  id: number;
-  title: string;
-  type: string;
-  image: string;
-  startDate: string;
-  endDate: string;
-  voteItemVote: {
-    id: number;
-    voteCount: number;
-    voteItem: VoteItem;
-  }[];
-};
+import { Vote } from './types';
 
 function SkeletonVoteCard() {
   return (
