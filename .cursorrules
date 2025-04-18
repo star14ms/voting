@@ -1,0 +1,55 @@
+# Project Architecture Rules
+
+## Note
+- This is a living document
+- New rules should be added as they are discovered
+- Keep this file updated with any new project settings or constraints
+
+## Database
+- Using Prisma with Neon (PostgreSQL) as the cloud database
+- Database URL is stored in environment variables
+- Models are defined in prisma/schema.prisma
+
+### Models
+#### Vote
+- Represents a single voting event
+- Contains title, type (CELEBRITY/TVSHOW), and date range
+- Has many VoteItems (the items being voted on)
+- Has many VoteItemVotes (to track votes for its items)
+
+#### VoteItem
+- Represents an item that can be voted on
+- Contains name, description, and image URL
+- Belongs to one Vote
+- Has many VoteItemVotes (to track its votes)
+
+#### VoteItemVote
+- Tracks individual vote counts for each item in a vote
+- Links a VoteItem to a Vote with a vote count
+- Has unique constraint on [voteItemId, voteId] to prevent duplicates
+- Used to count how many votes each item gets in a specific vote
+
+## File Storage
+- Images are stored as URLs in the database
+- Image URLs are stored in the VoteItem model's image field
+- No local file storage is used
+
+## API Routes
+- All API routes are in the app/api directory
+- Using Next.js API routes with TypeScript
+- Form data is handled using FormData API
+
+## Frontend
+- Using Next.js with TypeScript
+- Components are in app/components
+- Pages are in app directory
+- Using Tailwind CSS for styling
+
+## State Management
+- Using React hooks for local state
+- No global state management library
+
+## Deployment
+- Cloud-based deployment (not local)
+- Database is hosted on Neon
+- No local file system access 
