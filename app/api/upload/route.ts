@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { put } from '@vercel/blob';
+import { uploadToS3 } from '@/lib/s3';
 
 export async function POST(request: Request) {
   try {
@@ -13,11 +13,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const blob = await put(file.name, file, {
-      access: 'public',
-    });
-
-    return NextResponse.json({ url: blob.url });
+    const url = await uploadToS3(file);
+    return NextResponse.json({ url });
   } catch (error) {
     console.error('Error uploading file:', error);
     return NextResponse.json(
