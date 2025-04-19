@@ -350,7 +350,7 @@ export async function getUserVoteItem(voteId: string, userId: string): Promise<n
       }
     });
 
-    return userVote?.voteItemVoteId || null;
+    return userVote?.voteItemVote?.voteItemId || null;
   } catch (error) {
     console.error('Error getting user vote item:', error);
     return null;

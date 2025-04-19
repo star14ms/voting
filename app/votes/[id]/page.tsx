@@ -84,7 +84,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
       router.push('/auth/signin');
       return;
     }
-    // console.log(await getUserVoteItem(params.id, session?.user?.id))
 
     try {
       setIsVoting(true);
