@@ -64,7 +64,7 @@ export default function HomePage() {
           <div className="space-y-6">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative h-72">
+                <div className="relative h-96">
                   <div className="relative h-full overflow-hidden">
                     <Skeleton variant="image" className="h-full w-full" />
                   </div>

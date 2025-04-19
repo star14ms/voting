@@ -32,20 +32,27 @@ export default function VoteCard({ vote }: VoteCardProps) {
   };
 
   return (
-    <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="relative bg-white rounded-lg shadow-md overflow-hidden group">
       <Link
         href={`/votes/${vote.id}`}
-        className="bg-white rounded-xl shadow hover:shadow-lg transition-shadow"
+        className="block bg-white rounded-xl shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
       >
-        <div className="relative h-96">
+        <div className="relative h-96 overflow-hidden">
           <Image
             src={getPublicUrl(vote.image)}
             alt={vote.title}
             fill
-            className="object-cover rounded-t-xl"
+            className="object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-0 group-hover:translate-y-[-10px] transition-transform duration-300">
+            <h3 className="text-2xl font-bold mb-2">{vote.title}</h3>
+            <p className="text-sm text-white/80">
+              투표 기간: {vote.startDate.toLocaleDateString()} - {vote.endDate.toLocaleDateString()}
+            </p>
+          </div>
           {session?.status === 'authenticated' && (
             <button
               onClick={handleRemoveClick}
@@ -54,23 +61,6 @@ export default function VoteCard({ vote }: VoteCardProps) {
               <TrashIcon className="h-5 w-5" />
             </button>
           )}
-        </div>
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-red-100 text-red-500 text-sm px-2 py-1 rounded">
-              D-{calculateDday(vote.endDate)}
-            </span>
-            <h2 className="text-lg font-semibold">{vote.title}</h2>
-          </div>
-          <p className="text-gray-600">{vote.title}</p>
-          <div className="mt-4 flex justify-end text-sm text-gray-500">
-            <span>
-              투표 기간: {new Date(vote.startDate).toLocaleDateString()} (
-              {new Date(vote.startDate).toLocaleDateString('ko-KR', { weekday: 'short' })}) -{' '}
-              {new Date(vote.endDate).toLocaleDateString()} (
-              {new Date(vote.endDate).toLocaleDateString('ko-KR', { weekday: 'short' })})
-            </span>
-          </div>
         </div>
       </Link>
 

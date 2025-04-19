@@ -413,8 +413,8 @@ export default function VotePage({ params }: { params: { id: string } }) {
               const style = item.rank === 1 ? medalStyles.first : 
                            item.rank === 2 ? medalStyles.second : medalStyles.third;
               return (
-                <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3">
-                  <div className={`relative rounded-xl shadow-xl w-full ${style.card} ${
+                <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3 group">
+                  <div className={`relative rounded-xl shadow-xl w-full ${style.card} transform transition-all duration-300 hover:scale-[1.02] ${
                     index === 0 ? 'md:order-2' : 
                     index === 1 ? 'md:order-1' : 
                     'md:order-3'
@@ -425,10 +425,10 @@ export default function VotePage({ params }: { params: { id: string } }) {
                           src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
                           alt={item.voteItem.name}
                           fill
-                          className="object-cover"
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
                       <div className="absolute -top-6 -left-6 flex items-center justify-center">
                         <div className={`${style.badge} rounded-full flex items-center justify-center text-white font-bold text-2xl z-10`}>
