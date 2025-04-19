@@ -7,8 +7,9 @@ import Link from 'next/link';
 import { getPublicUrl } from '@/lib/s3';
 import { getVote, voteForItem, removeVote, resetVotes, deleteVote } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
-import VoteRemoveModal from '@/components/VoteRemoveModal';
+import VoteRemoveModal from '@/app/components/VoteRemoveModal';
 import { useSession } from 'next-auth/react';
+import Skeleton from '@/app/components/Skeleton';
 
 export default function VotePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -23,6 +24,8 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+
+  console.log(isVoting)
 
   useEffect(() => {
     if (!params?.id) {
@@ -178,58 +181,100 @@ export default function VotePage({ params }: { params: { id: string } }) {
     try {
       setIsDeleting(true);
       await deleteVote(params.id);
-      router.push('/');
+      setVote(null);
+      setSelectedItem(null);
+      setHasVoted(false);
+      localStorage.removeItem(`vote_${params.id}`);
     } catch (error) {
       console.error('Error deleting vote:', error);
       if (error instanceof Error) {
         setError(error.message);
-      } else {
-        setError('투표 삭제 중 오류가 발생했습니다');
       }
     } finally {
       setIsDeleting(false);
-      setShowDeleteConfirm(false);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
+        <div className="w-full max-w-6xl">
+          <div className="flex items-center justify-between mb-8">
+            <Skeleton variant="text" className="w-32" />
+            <div className="flex gap-2">
+              <Skeleton variant="button" />
+              <Skeleton variant="button" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-center">
+              <Skeleton variant="image" className="h-64 w-full mb-6" />
+              <Skeleton variant="text" className="h-8 w-3/4 mx-auto mb-4" />
+              <Skeleton variant="text" className="h-4 w-1/2 mx-auto" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-white rounded-xl shadow p-4">
+                  <Skeleton variant="image" className="h-48 mb-4" />
+                  <Skeleton variant="text" className="mb-2" />
+                  <Skeleton variant="text" className="w-3/4" />
+                  <div className="flex justify-between items-center mt-4">
+                    <Skeleton variant="text" className="w-24" />
+                    <Skeleton variant="button" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-red-500 mb-4">{error}</div>
-        <Link href="/" className="text-blue-500 hover:text-blue-700">
-          ← Back to Home
-        </Link>
+      <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
+        <div className="w-full max-w-6xl">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/" className="text-gray-600 hover:text-gray-900">
+              ← 홈으로 돌아가기
+            </Link>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-red-500 mb-4">{error}</div>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!vote) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="text-gray-500 mb-4">Vote not found</div>
-        <Link href="/" className="text-blue-500 hover:text-blue-700">
-          ← Back to Home
-        </Link>
+      <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
+        <div className="w-full max-w-6xl">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/" className="text-gray-600 hover:text-gray-900">
+              ← 홈으로 돌아가기
+            </Link>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="text-gray-500 mb-4">투표를 찾을 수 없습니다</div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
-      <div className="w-full max-w-4xl">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Link href="/" className="text-blue-500 hover:text-blue-700">
-              ← Back to Home
-            </Link>
+    <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
+      <div className="w-full max-w-6xl">
+        <div className="flex items-center justify-between mb-8">
+          <Link href="/" className="text-gray-600 hover:text-gray-900">
+            ← 홈으로 돌아가기
+          </Link>
+          {session?.user && (
             <div className="flex gap-2">
               <button
                 onClick={handleResetVotes}
@@ -254,7 +299,10 @@ export default function VotePage({ params }: { params: { id: string } }) {
                 {isDeleting ? '삭제 중...' : '투표 삭제'}
               </button>
             </div>
-          </div>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
           <div className="text-center">
             <div className="relative h-64 w-full mb-6">
               <Image
@@ -271,27 +319,25 @@ export default function VotePage({ params }: { params: { id: string } }) {
               <span>투표 기간: {vote.startDate.toLocaleDateString()} ({vote.startDate.toLocaleDateString('ko-KR', { weekday: 'short' })}) - {vote.endDate.toLocaleDateString()} ({vote.endDate.toLocaleDateString('ko-KR', { weekday: 'short' })})</span>
             </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {vote.voteItemVote?.map((item) => (
-            <div
-              key={item.voteItem.id}
-              className={`bg-white rounded-xl shadow p-4 transition-all ${
-                selectedItem === item.voteItem.id ? 'ring-2 ring-blue-500' : ''
-              }`}
-            >
-              <div className="relative h-48 mb-4">
-                <Image
-                  src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
-                  alt={item.voteItem.name}
-                  fill
-                  className="object-cover rounded-lg"
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                />
-              </div>
-              <div className="space-y-4">
-                <div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            {vote.voteItemVote.map((item) => (
+              <div
+                key={item.voteItem.id}
+                className={`bg-white rounded-xl shadow p-4 transition-all ${
+                  selectedItem === item.voteItem.id ? 'ring-2 ring-blue-500' : ''
+                }`}
+              >
+                <div className="relative h-48 mb-4">
+                  <Image
+                    src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
+                    alt={item.voteItem.name}
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                </div>
+                <div className="space-y-4">
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.voteItem.name}</h3>
                   <p className="text-gray-600 mb-2">{item.voteItem.description}</p>
                 </div>
@@ -315,25 +361,22 @@ export default function VotePage({ params }: { params: { id: string } }) {
                             : 'bg-blue-500 hover:bg-blue-600'
                         } text-white px-4 py-2 rounded-lg transition-colors`}
                       >
-                        {hasVoted ? '변경하기' : '투표하기'}
+                        {isVoting ? '투표 중...' : '투표하기'}
                       </button>
                     )}
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-
-        {showDeleteConfirm && (
-          <VoteRemoveModal
-            isOpen={showDeleteConfirm}
-            onClose={() => setShowDeleteConfirm(false)}
-            voteId={vote.id}
-            voteTitle={vote.title}
-          />
-        )}
       </div>
-    </main>
+      <VoteRemoveModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        voteId={Number(params.id)}
+        voteTitle={vote?.title || ''}
+      />
+    </div>
   );
 } 
