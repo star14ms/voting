@@ -9,10 +9,12 @@ import { VoteItem, SimpleVoteItem } from '@/app/types';
 import { uploadFile, createVote } from '@/lib/actions/votes';
 import { getPublicUrl } from '@/lib/s3';
 import SelectVoteItemModalClient from '@/app/components/SelectVoteItemModalClient';
+import { useSession } from 'next-auth/react';
 
 type ExistingVoteItem = SimpleVoteItem;
 
 export default function CreateVotePage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [voteItems, setVoteItems] = useState<VoteItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +41,16 @@ export default function CreateVotePage() {
 
   const [startDate, setStartDate] = useState(formatDate(today));
   const [endDate, setEndDate] = useState(formatDate(twoWeeksLater));
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Create Page - Session Status:', status);
+    console.log('Create Page - Session Data:', session);
+    console.log('Create Page - Debug Headers:', {
+      token: document.cookie.includes('next-auth.session-token'),
+      path: window.location.pathname,
+    });
+  }, [session, status]);
 
   useEffect(() => {
     const fetchVoteItems = async () => {

@@ -50,11 +50,16 @@ export type VoteItemVoteResponse = BaseVoteItemVote & {
   voteItem: VoteItemResponse;
 };
 
-export type VoteResponse = BaseVote & {
+export type VoteResponse = {
+  id: number;
+  title: string;
+  type: string;
+  image: string;
+  createdAt: Date;
+  updatedAt: Date;
   startDate: Date;
   endDate: Date;
   voteItemVote: VoteItemVoteResponse[];
-  voteCount: number;
 };
 
 // Extended types for server responses

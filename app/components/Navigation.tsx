@@ -9,6 +9,7 @@ export default function Navigation() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const router = useRouter();
+
   const handleSignIn = async () => {
     try {
       router.push('/auth/signin');

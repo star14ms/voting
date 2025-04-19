@@ -1,24 +1,21 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { getVotes } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
 import Skeleton from './components/Skeleton';
 import VoteCard from '@/app/components/VoteCard';
-import { useSession } from 'next-auth/react';
 
 export default function HomePage() {
   const [votes, setVotes] = useState<VoteResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const session = useSession();
 
   const fetchVotes = async () => {
     try {
       const data = await getVotes();
       // Sort by vote count and take top 3
-      const sortedVotes = [...data].sort((a, b) => b.voteCount - a.voteCount).slice(0, 3);
+      const sortedVotes = [...data].sort((a, b) => b.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0) - a.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0)).slice(0, 3);
       setVotes(sortedVotes);
     } catch (err) {
       console.error('Error fetching votes:', err);
@@ -61,16 +58,6 @@ export default function HomePage() {
       <div className="w-full max-w-6xl">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">인기 투표</h1>
-          <div className="flex space-x-4">
-            {session?.status === 'authenticated' && (
-              <Link
-                href="/votes/create"
-                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-              >
-                투표 만들기
-              </Link>
-            )}
-          </div>
         </div>
 
         {isLoading ? (

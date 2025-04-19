@@ -3,6 +3,7 @@ import GoogleProvider from 'next-auth/providers/google';
 import PostgresAdapter from '@auth/pg-adapter';
 import { Pool } from '@neondatabase/serverless';
 import type { NextAuthConfig } from 'next-auth';
+import { log } from './logging-service';
 
 const authOptions: NextAuthConfig = {
   adapter: PostgresAdapter(new Pool({ connectionString: process.env.DATABASE_URL })),
@@ -12,6 +13,17 @@ const authOptions: NextAuthConfig = {
   })],
   secret: process.env.NEXTAUTH_SECRET,
   basePath: '/api/auth',
+  logger: {
+    error(code, ...message) {
+      log.error(code, ...message);
+    },
+    warn(code, ...message) {
+      log.warn(code, ...message);
+    },
+    debug(code, ...message) {
+      log.debug(code, ...message);
+    }
+  },
   callbacks: {
     session: ({ session, token }) => {
       return {
@@ -23,6 +35,8 @@ const authOptions: NextAuthConfig = {
       };
     },
     jwt: ({ token, user }) => {
+      log.warn('JWT callback - Token:', token);
+      log.warn('JWT callback - User:', user);
       if (user) {
         token.sub = user.id;
       }
@@ -36,6 +50,7 @@ const authOptions: NextAuthConfig = {
   },
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
 };
 

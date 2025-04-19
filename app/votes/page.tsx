@@ -7,6 +7,7 @@ import { VoteResponse } from '@/app/types';
 import Skeleton from '../components/Skeleton';
 import VoteCard from '@/app/components/VoteCard';
 import { useSession } from 'next-auth/react';
+import SeedButton from '../components/SeedButton';
 
 export default function VotesPage() {
   const [votes, setVotes] = useState<VoteResponse[]>([]);
@@ -61,12 +62,15 @@ export default function VotesPage() {
           <h1 className="text-2xl font-bold text-gray-900">진행중인 투표</h1>
           <div className="flex space-x-4">
             {session?.status === 'authenticated' && (
+              <>
               <Link
                 href="/votes/create"
                 className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
               >
                 투표 만들기
               </Link>
+              <SeedButton />
+              </>
             )}
           </div>
         </div>

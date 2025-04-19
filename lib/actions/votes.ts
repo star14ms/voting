@@ -324,7 +324,9 @@ export async function getVotes(): Promise<VoteResponse[]> {
     return votes.map(vote => ({
       ...vote,
       startDate: new Date(vote.startDate),
-      endDate: new Date(vote.endDate)
+      endDate: new Date(vote.endDate),
+      image: vote.image,
+      voteCount: vote.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0)
     }));
   } catch (error) {
     console.error('Error fetching votes:', error);

@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "투표하세요",
+  title: "투표하세요!",
   description: "온라인 투표 시스템",
 };
 

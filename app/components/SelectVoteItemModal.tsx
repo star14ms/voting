@@ -1,6 +1,6 @@
 'use client';
 
-import { SimpleVoteItem } from '@/app/types/index';
+import { SimpleVoteItem } from '@/app/types';
 import { getPublicUrl } from '@/lib/s3';
 import SelectVoteItemModalClient from './SelectVoteItemModalClient';
 
