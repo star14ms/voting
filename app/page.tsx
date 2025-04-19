@@ -7,13 +7,13 @@ import { VoteResponse } from '@/app/types';
 import Skeleton from './components/Skeleton';
 import VoteCard from '@/app/components/VoteCard';
 import SeedButton from './components/SeedButton';
-import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 export default function HomePage() {
   const [votes, setVotes] = useState<VoteResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
+  const session = useSession();
 
   const fetchVotes = async () => {
     try {
@@ -63,13 +63,17 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">진행중인 투표</h1>
           <div className="flex space-x-4">
-            <Link
-              href="/votes/create"
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
-            >
-              투표 만들기
-            </Link>
-            <SeedButton />
+            {session?.status === 'authenticated' && (
+              <>
+              <Link
+                href="/votes/create"
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                투표 만들기
+              </Link>
+              <SeedButton />
+              </>
+            )}
           </div>
         </div>
 

@@ -44,7 +44,7 @@ const medalStyles = {
 
 export default function VotePage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [vote, setVote] = useState<VoteResponse | null>(null);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -55,7 +55,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
-  const authenticated = session?.user?.id !== undefined;
 
   useEffect(() => {
     if (!params?.id) {
@@ -584,7 +583,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
 
         <div className="flex items-center justify-between mt-8">
           <div></div>
-          {authenticated && (
+          {status === 'authenticated' && (
             <div className="flex gap-2">
               <button
                 onClick={handleResetVotes}
