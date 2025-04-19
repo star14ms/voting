@@ -207,8 +207,8 @@ export default function VotePage({ params }: { params: { id: string } }) {
             </h2>
             <div className="flex flex-col md:flex-row justify-center gap-6 relative mb-16">
               {[1, 0, 2].map((position) => (
-                <div key={position} className="flex flex-col items-center justify-end">
-                  <div className={`relative rounded-xl shadow-xl ${
+                <div key={position} className="flex flex-col items-center justify-end w-1/3">
+                  <div className={`relative rounded-xl shadow-xl w-full ${
                     position === 0 ? 'bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-t-[6px] border-yellow-400' :
                     position === 1 ? 'bg-gradient-to-br from-gray-50 via-white to-gray-50 border-t-4 border-gray-400' :
                     'bg-gradient-to-br from-orange-50 via-white to-orange-50 border-t-4 border-orange-400'
@@ -219,7 +219,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                         position === 1 ? 'bg-gray-50' :
                         'bg-orange-50'
                       }`}>
-                        <Skeleton variant="image" className="h-[440px] w-[330px]" />
+                        <Skeleton variant="image" className="h-[436px]" />
                       </div>
                       <div className="absolute -top-6 -left-6 flex items-center justify-center">
                         <div className={`${
@@ -292,7 +292,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
               {[...Array(4)].map((_, i) => (
                 <div key={i} className="bg-white rounded-xl shadow-md transition-all duration-300 relative">
                   <div className="flex">
-                    <div className="relative w-[140px] h-[200px]">
+                    <div className="relative w-[150px] h-[200px]">
                       <div className="relative h-full overflow-hidden rounded-l-xl">
                         <Skeleton variant="image" className="h-full w-full" />
                       </div>
@@ -414,13 +414,13 @@ export default function VotePage({ params }: { params: { id: string } }) {
                            item.rank === 2 ? medalStyles.second : medalStyles.third;
               return (
                 <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3">
-                  <div className={`relative rounded-xl shadow-xl ${style.card} ${
+                  <div className={`relative rounded-xl shadow-xl w-full ${style.card} ${
                     index === 0 ? 'md:order-2' : 
                     index === 1 ? 'md:order-1' : 
                     'md:order-3'
                   }`}>
                     <div className="relative">
-                      <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl h-[440px]`}>
+                      <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl h-[436px]`}>
                         <Image
                           src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
                           alt={item.voteItem.name}
@@ -543,7 +543,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                   </div>
-                  <div className="p-6 flex flex-col justify-between">
+                  <div className="p-6 flex flex-col justify-between w-full">
                     <div>
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.voteItem.name}</h3>
                       <p className="text-gray-600 mb-2">{item.voteItem.description}</p>
