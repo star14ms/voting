@@ -54,6 +54,7 @@ export type VoteResponse = BaseVote & {
   startDate: Date;
   endDate: Date;
   voteItemVote: VoteItemVoteResponse[];
+  voteCount: number;
 };
 
 // Extended types for server responses

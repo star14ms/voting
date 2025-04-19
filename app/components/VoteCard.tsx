@@ -8,6 +8,8 @@ import VoteRemoveModal from './VoteRemoveModal';
 import { VoteResponse } from '@/app/types';
 import { getPublicUrl } from '@/lib/s3';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+
 interface VoteCardProps {
   vote: VoteResponse;
 }
@@ -22,6 +24,7 @@ function calculateDday(endDate: Date) {
 export default function VoteCard({ vote }: VoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const router = useRouter();
+  const session = useSession();
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,7 +37,7 @@ export default function VoteCard({ vote }: VoteCardProps) {
         href={`/votes/${vote.id}`}
         className="bg-white rounded-xl shadow hover:shadow-lg transition-shadow"
       >
-        <div className="relative h-48">
+        <div className="relative h-96">
           <Image
             src={getPublicUrl(vote.image)}
             alt={vote.title}
@@ -43,12 +46,14 @@ export default function VoteCard({ vote }: VoteCardProps) {
             priority
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
-          <button
-            onClick={handleRemoveClick}
-            className="absolute right-2 top-2 rounded-full bg-white/80 p-2 text-gray-900 transition-colors hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-          >
-            <TrashIcon className="h-5 w-5" />
-          </button>
+          {session?.status === 'authenticated' && (
+            <button
+              onClick={handleRemoveClick}
+              className="absolute right-2 top-2 rounded-full bg-white/80 p-2 text-gray-900 transition-colors hover:bg-red-100 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          )}
         </div>
         <div className="p-4">
           <div className="flex items-center gap-2 mb-2">
