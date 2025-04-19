@@ -139,7 +139,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
     try {
       setIsVoting(true);
       setError(null);
-      await removeVote(params.id, itemId);
+      await removeVote(params.id, itemId, session.user.id);
       setHasVoted(false);
       setSelectedItem(null);
       router.refresh();
@@ -289,8 +289,10 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const top3Items = rankedItems.filter(item => item.rank <= 3);
   top3Items.sort((a, b) => a.rank - b.rank);
 
-  // Get remaining items for the list
-  const remainingItems = rankedItems.filter(item => item.rank > 3);
+  // Get remaining items for the list in descending ID order
+  const remainingItems = vote.voteItemVote
+    .filter(item => !top3Items.some(topItem => topItem.voteItem.id === item.voteItem.id))
+    .sort((a, b) => b.voteItem.id - a.voteItem.id);
 
   return (
     <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
@@ -405,9 +407,13 @@ export default function VotePage({ params }: { params: { id: string } }) {
                           </span>
                         </div>
                         {selectedItem === item.voteItem.id ? (
-                          <span className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full flex items-center gap-1">
+                          <button
+                            onClick={() => handleRemoveVote(item.voteItem.id)}
+                            disabled={isVoting}
+                            className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1"
+                          >
                             ✓ 투표 완료
-                          </span>
+                          </button>
                         ) : (
                           <button
                             onClick={() => hasVoted ? handleChangeVote(item.voteItem.id) : handleVote(item.voteItem.id)}
@@ -449,16 +455,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
                 key={item.voteItem.id}
                 className={`bg-white rounded-xl shadow-md transition-all duration-300 relative ${
                   selectedItem === item.voteItem.id ? 'outline outline-4 outline-blue-500 outline-offset-2 bg-blue-50' : ''
-                } ${
-                  item.rank <= 3 
-                    ? `border-l-4 ${
-                        item.rank === 1 
-                          ? 'border-l-yellow-400 bg-yellow-50/50' 
-                          : item.rank === 2 
-                            ? 'border-l-gray-400 bg-gray-50/50' 
-                            : 'border-l-orange-400 bg-orange-50/50'
-                      }`
-                    : ''
                 }`}
               >
                 <div className="flex">
@@ -499,10 +495,11 @@ export default function VotePage({ params }: { params: { id: string } }) {
                       <div className="w-24 text-right">
                         {selectedItem === item.voteItem.id ? (
                           <button
-                            disabled
-                            className="bg-gray-100 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed"
+                            onClick={() => handleRemoveVote(item.voteItem.id)}
+                            disabled={isVoting}
+                            className="text-sm font-medium text-green-600 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1"
                           >
-                            투표 완료
+                            ✓ 투표 완료
                           </button>
                         ) : (
                           <button

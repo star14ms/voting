@@ -180,7 +180,7 @@ export async function voteForItem(voteId: string, itemId: number, userId: string
   }
 }
 
-export async function removeVote(voteId: string, itemId: number) {
+export async function removeVote(voteId: string, itemId: number, userId: string) {
   try {
     const voteItemVote = await prisma.voteItemVote.findUnique({
       where: {
@@ -205,6 +205,15 @@ export async function removeVote(voteId: string, itemId: number) {
       data: {
         voteCount: {
           decrement: 1
+        }
+      }
+    });
+
+    await prisma.userVotes.delete({
+      where: {
+        userId_voteId: {
+          userId: Number(userId),
+          voteId: Number(voteId)
         }
       }
     });
