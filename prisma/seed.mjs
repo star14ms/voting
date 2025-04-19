@@ -1,16 +1,13 @@
-'use server';
-
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export async function seedDatabase() {
+async function main() {
   try {
     // First create the vote
     console.log('Creating vote...');
     const startDate = new Date();
     const endDate = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    
     
     const vote = await prisma.vote.create({
       data: {
@@ -71,11 +68,17 @@ export async function seedDatabase() {
       console.log(`Created vote item: ${voteItem.name}`);
     }
 
-    await prisma.$disconnect();
-    return { success: true, message: '샘플 데이터가 성공적으로 추가되었습니다.' };
+    console.log('Seed data created successfully');
   } catch (error) {
     console.error('Error during seeding:', error);
+    throw error;
+  } finally {
     await prisma.$disconnect();
-    return { success: false, error: '샘플 데이터 추가 중 오류가 발생했습니다.' };
   }
-} 
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  }); 

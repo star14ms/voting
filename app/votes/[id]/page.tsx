@@ -8,9 +8,11 @@ import { getPublicUrl } from '@/lib/s3';
 import { getVote, voteForItem, removeVote, resetVotes, deleteVote } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
 import VoteRemoveModal from '@/components/VoteRemoveModal';
+import { useSession } from 'next-auth/react';
 
 export default function VotePage({ params }: { params: { id: string } }) {
   const router = useRouter();
+  const { data: session } = useSession();
   const [vote, setVote] = useState<VoteResponse | null>(null);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
@@ -75,7 +77,12 @@ export default function VotePage({ params }: { params: { id: string } }) {
     
     try {
       setIsVoting(true);
-      await voteForItem(params.id, itemId);
+      if (!session?.user?.id) {
+        router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+        return;
+      }
+      
+      await voteForItem(params.id, itemId, session.user.id);
       
       setHasVoted(true);
       setSelectedItem(itemId);
@@ -87,6 +94,10 @@ export default function VotePage({ params }: { params: { id: string } }) {
     } catch (error) {
       console.error('Error voting:', error);
       if (error instanceof Error) {
+        if (error.message === '로그인이 필요합니다') {
+          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
         setError(error.message);
       }
     } finally {

@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/db';
 import { uploadToS3 } from '@/lib/s3';
 import { revalidatePath } from 'next/cache';
 import { VoteResponse } from '@/app/types';
@@ -138,40 +138,56 @@ export async function getVote(id: string) {
   }
 }
 
-export async function voteForItem(voteId: string, itemId: number) {
+export async function voteForItem(voteId: string, itemId: number, userId: string) {
   try {
+    // Check if user is authenticated
+    if (!userId) {
+      throw new Error('로그인이 필요합니다');
+    }
+
+    // Check if user has already voted
+    const hasVoted = await hasUserVoted(Number(voteId), userId);
+    if (hasVoted) {
+      throw new Error('이미 투표하셨습니다.');
+    }
+
+    // Find or create VoteItemVote
     const voteItemVote = await prisma.voteItemVote.findUnique({
       where: {
         voteItemId_voteId: {
           voteItemId: itemId,
-          voteId: Number(voteId)
-        }
-      }
+          voteId: Number(voteId),
+        },
+      },
     });
 
     if (!voteItemVote) {
-      throw new Error('투표 항목을 찾을 수 없습니다');
+      throw new Error('투표 항목을 찾을 수 없습니다.');
     }
 
+    // Increment vote count
     const updatedVoteItemVote = await prisma.voteItemVote.update({
       where: {
         voteItemId_voteId: {
           voteItemId: itemId,
-          voteId: Number(voteId)
-        }
+          voteId: Number(voteId),
+        },
       },
       data: {
         voteCount: {
-          increment: 1
-        }
-      }
+          increment: 1,
+        },
+      },
     });
+
+    // Record user's vote
+    await recordUserVote(Number(voteId), userId, updatedVoteItemVote.id);
 
     revalidatePath(`/votes/${voteId}`);
     return updatedVoteItemVote;
   } catch (error) {
     console.error('Error voting for item:', error);
-    throw new Error('투표에 실패했습니다');
+    throw error;
   }
 }
 
@@ -312,9 +328,46 @@ export async function getVotes(): Promise<VoteResponse[]> {
   }
 }
 
+export async function hasUserVoted(voteId: number, userId: string): Promise<boolean> {
+  const userVote = await prisma.userVote.findUnique({
+    where: {
+      userId_voteId: {
+        userId,
+        voteId,
+      },
+    },
+  });
+  return !!userVote;
+}
+
+export async function getUserVoteItem(voteId: number, userId: string): Promise<number | null> {
+  const userVote = await prisma.userVote.findUnique({
+    where: {
+      userId_voteId: {
+        userId,
+        voteId,
+      },
+    },
+    select: {
+      voteItemVoteId: true,
+    },
+  });
+  return userVote?.voteItemVoteId || null;
+}
+
+export async function recordUserVote(voteId: number, userId: string, voteItemVoteId: number): Promise<void> {
+  await prisma.userVote.create({
+    data: {
+      userId,
+      voteId,
+      voteItemVoteId,
+    },
+  });
+}
+
 export async function deleteUnusedVoteItems() {
   try {
-    // Find all vote items that have no VoteItemVote records
+    // Find all vote items that are not associated with any voteItemVote
     const unusedItems = await prisma.voteItem.findMany({
       where: {
         voteItemVote: {
@@ -323,12 +376,8 @@ export async function deleteUnusedVoteItems() {
       }
     });
 
-    if (unusedItems.length === 0) {
-      return { message: '삭제할 항목이 없습니다.' };
-    }
-
     // Delete the unused items
-    await prisma.voteItem.deleteMany({
+    const deletedCount = await prisma.voteItem.deleteMany({
       where: {
         id: {
           in: unusedItems.map(item => item.id)
@@ -337,7 +386,7 @@ export async function deleteUnusedVoteItems() {
     });
 
     revalidatePath('/vote-items');
-    return { message: `${unusedItems.length}개의 미사용 항목이 삭제되었습니다.` };
+    return { message: `${deletedCount.count}개의 미사용 항목이 삭제되었습니다.` };
   } catch (error) {
     console.error('Error deleting unused vote items:', error);
     throw new Error('미사용 항목 삭제에 실패했습니다');
