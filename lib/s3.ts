@@ -3,7 +3,13 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 function getS3Client() {
   if (!process.env.AWS_REGION || !process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_BUCKET_NAME) {
-    throw new Error('Missing required AWS environment variables');
+    const missingVars = [];
+    if (!process.env.AWS_REGION) missingVars.push('AWS_REGION');
+    if (!process.env.AWS_ACCESS_KEY_ID) missingVars.push('AWS_ACCESS_KEY_ID');
+    if (!process.env.AWS_SECRET_ACCESS_KEY) missingVars.push('AWS_SECRET_ACCESS_KEY');
+    if (!process.env.AWS_BUCKET_NAME) missingVars.push('AWS_BUCKET_NAME');
+    
+    throw new Error(`Missing required AWS environment variables: ${missingVars.join(', ')}`);
   }
 
   return new S3Client({
@@ -17,15 +23,16 @@ function getS3Client() {
 
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 
-export async function uploadToS3(file) {
+export async function uploadToS3(file: File): Promise<string> {
   try {
     const s3Client = getS3Client();
-    const key = `images/${Date.now()}-${file.name}`;
+    const key = `uploads/${Date.now()}-${file.name}`;
+    const buffer = await file.arrayBuffer();
     
     const command = new PutObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: BUCKET_NAME,
       Key: key,
-      Body: new Uint8Array(await file.arrayBuffer()),
+      Body: new Uint8Array(buffer),
       ContentType: file.type
     });
 
@@ -37,11 +44,11 @@ export async function uploadToS3(file) {
   }
 }
 
-export async function getS3SignedUrl(key) {
+export async function getS3SignedUrl(key: string): Promise<string> {
   try {
     const s3Client = getS3Client();
     const command = new GetObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: BUCKET_NAME,
       Key: key,
     });
 
@@ -52,7 +59,7 @@ export async function getS3SignedUrl(key) {
   }
 }
 
-export function getPublicUrl(key) {
+export function getPublicUrl(key: string): string {
   try {
     // If the key is already a full URL, return it as is
     if (key.startsWith('http://') || key.startsWith('https://')) {
@@ -67,11 +74,11 @@ export function getPublicUrl(key) {
   }
 }
 
-export async function deleteFromS3(key) {
+export async function deleteFromS3(key: string): Promise<boolean> {
   try {
     const s3Client = getS3Client();
     const command = new DeleteObjectCommand({
-      Bucket: process.env.AWS_BUCKET_NAME,
+      Bucket: BUCKET_NAME,
       Key: key,
     });
 

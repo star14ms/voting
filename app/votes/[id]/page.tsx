@@ -5,31 +5,12 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPublicUrl } from '@/lib/s3';
-
-type VoteItem = {
-  id: number;
-  name: string;
-  description: string;
-  image: string;
-};
-
-type Vote = {
-  id: number;
-  title: string;
-  type: 'CELEBRITY' | 'TVSHOW';
-  image: string;
-  startDate: string;
-  endDate: string;
-  voteItemVote: {
-    id: number;
-    voteCount: number;
-    voteItem: VoteItem;
-  }[];
-};
+import { getVote, voteForItem, removeVote, resetVotes, deleteVote } from '@/lib/actions/votes';
+import { VoteResponse } from '@/app/types';
 
 export default function VotePage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const [vote, setVote] = useState<Vote | null>(null);
+  const [vote, setVote] = useState<VoteResponse | null>(null);
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -51,13 +32,8 @@ export default function VotePage({ params }: { params: { id: string } }) {
       try {
         setIsLoading(true);
         setError(null);
-        const response = await fetch(`/api/votes/${params.id}`);
+        const data = await getVote(params.id);
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch vote');
-        }
-        
-        const data = await response.json();
         if (!data || !data.voteItemVote || !Array.isArray(data.voteItemVote)) {
           throw new Error('Invalid vote data');
         }
@@ -98,28 +74,20 @@ export default function VotePage({ params }: { params: { id: string } }) {
     
     try {
       setIsVoting(true);
-      const response = await fetch(`/api/votes/${params.id}/vote`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId }),
-      });
-
-      if (response.ok) {
-        setHasVoted(true);
-        setSelectedItem(itemId);
-        localStorage.setItem(`vote_${params.id}`, itemId.toString());
-        
-        // Refresh vote data to get updated counts
-        const updatedResponse = await fetch(`/api/votes/${params.id}`);
-        if (updatedResponse.ok) {
-          const updatedData = await updatedResponse.json();
-          setVote(updatedData);
-        }
-      }
+      await voteForItem(params.id, itemId);
+      
+      setHasVoted(true);
+      setSelectedItem(itemId);
+      localStorage.setItem(`vote_${params.id}`, itemId.toString());
+      
+      // Refresh vote data
+      const updatedData = await getVote(params.id);
+      setVote(updatedData);
     } catch (error) {
       console.error('Error voting:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     } finally {
       setIsVoting(false);
     }
@@ -145,18 +113,15 @@ export default function VotePage({ params }: { params: { id: string } }) {
       }
 
       // First, remove the previous vote
-      await fetch(`/api/votes/${params.id}/vote`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ itemId: selectedItem }),
-      });
+      await removeVote(params.id, selectedItem!);
 
       // Then, add the new vote
       await handleVote(newItemId);
     } catch (error) {
       console.error('Error changing vote:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
       // Revert UI changes if API call fails
       if (vote) {
         const revertedItems = vote.voteItemVote.map(item => {
@@ -180,19 +145,16 @@ export default function VotePage({ params }: { params: { id: string } }) {
     
     try {
       setIsResetting(true);
-      const response = await fetch(`/api/votes/${params.id}/reset`, {
-        method: 'POST',
-      });
-
-      if (response.ok) {
-        const updatedData = await response.json();
-        setVote(updatedData);
-        setSelectedItem(null);
-        setHasVoted(false);
-        localStorage.removeItem(`vote_${params.id}`);
-      }
+      const updatedData = await resetVotes(params.id);
+      setVote(updatedData);
+      setSelectedItem(null);
+      setHasVoted(false);
+      localStorage.removeItem(`vote_${params.id}`);
     } catch (error) {
       console.error('Error resetting votes:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      }
     } finally {
       setIsResetting(false);
     }
@@ -203,27 +165,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
     
     try {
       setIsDeleting(true);
-      console.log('Attempting to delete vote:', params.id);
-      
-      const response = await fetch(`/api/votes/${params.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      console.log('Delete response status:', response.status);
-      
-      if (!response.ok) {
-        const data = await response.json();
-        console.error('Delete error response:', data);
-        throw new Error(data.error || '투표 삭제에 실패했습니다');
-      }
-
-      const data = await response.json();
-      console.log('Delete success response:', data);
-
-      // Redirect to home page after successful deletion
+      await deleteVote(params.id);
       router.push('/');
     } catch (error) {
       console.error('Error deleting vote:', error);
@@ -314,7 +256,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{vote.title}</h1>
             <div className="text-sm text-gray-500">
-              <span>투표 기간: {new Date(vote.startDate).toLocaleDateString()} ({new Date(vote.startDate).toLocaleDateString('ko-KR', { weekday: 'short' })}) - {new Date(vote.endDate).toLocaleDateString()} ({new Date(vote.endDate).toLocaleDateString('ko-KR', { weekday: 'short' })})</span>
+              <span>투표 기간: {vote.startDate.toLocaleDateString()} ({vote.startDate.toLocaleDateString('ko-KR', { weekday: 'short' })}) - {vote.endDate.toLocaleDateString()} ({vote.endDate.toLocaleDateString('ko-KR', { weekday: 'short' })})</span>
             </div>
           </div>
         </div>
