@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPublicUrl } from '@/lib/s3';
-import { getVote, voteForItem, removeVote, resetVotes, deleteVote } from '@/lib/actions/votes';
+import { getVote, voteForItem, removeVote, resetVotes, deleteVote, getUserVoteItem } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
 import VoteRemoveModal from '@/app/components/VoteRemoveModal';
 import { useSession } from 'next-auth/react';
@@ -25,8 +25,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
 
-  console.log(isVoting)
-
   useEffect(() => {
     if (!params?.id) {
       setError('Invalid vote ID');
@@ -36,7 +34,9 @@ export default function VotePage({ params }: { params: { id: string } }) {
 
     const fetchVote = async () => {
       try {
-        setIsLoading(true);
+        if (vote == null) {
+          setIsLoading(true);
+        }
         setError(null);
         const data = await getVote(params.id);
         
@@ -47,10 +47,12 @@ export default function VotePage({ params }: { params: { id: string } }) {
         setVote(data);
         
         // Check if user has already voted
-        const votedItemId = localStorage.getItem(`vote_${params.id}`);
-        if (votedItemId) {
-          setSelectedItem(Number(votedItemId));
-          setHasVoted(true);
+        if (session?.user?.id) {
+          const userVote = await getUserVoteItem(params.id, session.user.id);
+          if (userVote) {
+            setSelectedItem(userVote);
+            setHasVoted(true);
+          }
         }
 
         // Pre-fetch image URLs
@@ -68,41 +70,51 @@ export default function VotePage({ params }: { params: { id: string } }) {
         console.error('Error fetching vote:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch vote');
       } finally {
-        setIsLoading(false);
+        if (vote == null) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchVote();
-  }, [params?.id]);
+  }, [params?.id, session?.user?.id, selectedItem]);
 
   const handleVote = async (itemId: number) => {
-    if (isVoting) return;
-    
+    if (session?.user?.id === undefined) {
+      router.push('/auth/signin');
+      return;
+    }
+    // console.log(await getUserVoteItem(params.id, session?.user?.id))
+
     try {
       setIsVoting(true);
-      if (!session?.user?.id) {
-        router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-        return;
-      }
-      
+      setError(null);
       await voteForItem(params.id, itemId, session.user.id);
-      
       setHasVoted(true);
       setSelectedItem(itemId);
-      localStorage.setItem(`vote_${params.id}`, itemId.toString());
-      
-      // Refresh vote data
-      const updatedData = await getVote(params.id);
-      setVote(updatedData);
-    } catch (error) {
-      console.error('Error voting:', error);
-      if (error instanceof Error) {
-        if (error.message === '로그인이 필요합니다') {
-          router.push(`/auth/signin?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
-          return;
-        }
-        setError(error.message);
-      }
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '투표에 실패했습니다');
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
+  const handleRemoveVote = async (itemId: number) => {
+    if (!session?.user?.id) {
+      router.push('/auth/signin');
+      return;
+    }
+
+    try {
+      setIsVoting(true);
+      setError(null);
+      await removeVote(params.id, itemId);
+      setHasVoted(false);
+      setSelectedItem(null);
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '투표 취소에 실패했습니다');
     } finally {
       setIsVoting(false);
     }
@@ -113,43 +125,16 @@ export default function VotePage({ params }: { params: { id: string } }) {
     
     try {
       setIsVoting(true);
-      // Update UI immediately for better UX
-      if (vote) {
-        const updatedItems = vote.voteItemVote.map(item => {
-          if (item.voteItem.id === selectedItem) {
-            return { ...item, voteCount: item.voteCount - 1 };
-          }
-          if (item.voteItem.id === newItemId) {
-            return { ...item, voteCount: item.voteCount + 1 };
-          }
-          return item;
-        });
-        setVote({ ...vote, voteItemVote: updatedItems });
-      }
-
+      setError(null);
+      
       // First, remove the previous vote
-      await removeVote(params.id, selectedItem!);
-
+      await handleRemoveVote(selectedItem!);
+      
       // Then, add the new vote
       await handleVote(newItemId);
-    } catch (error) {
-      console.error('Error changing vote:', error);
-      if (error instanceof Error) {
-        setError(error.message);
-      }
-      // Revert UI changes if API call fails
-      if (vote) {
-        const revertedItems = vote.voteItemVote.map(item => {
-          if (item.voteItem.id === selectedItem) {
-            return { ...item, voteCount: item.voteCount + 1 };
-          }
-          if (item.voteItem.id === newItemId) {
-            return { ...item, voteCount: item.voteCount - 1 };
-          }
-          return item;
-        });
-        setVote({ ...vote, voteItemVote: revertedItems });
-      }
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '투표 변경에 실패했습니다');
     } finally {
       setIsVoting(false);
     }
@@ -164,7 +149,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
       setVote(updatedData);
       setSelectedItem(null);
       setHasVoted(false);
-      localStorage.removeItem(`vote_${params.id}`);
     } catch (error) {
       console.error('Error resetting votes:', error);
       if (error instanceof Error) {
@@ -172,26 +156,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
       }
     } finally {
       setIsResetting(false);
-    }
-  };
-
-  const handleDeleteVote = async () => {
-    if (isDeleting) return;
-    
-    try {
-      setIsDeleting(true);
-      await deleteVote(params.id);
-      setVote(null);
-      setSelectedItem(null);
-      setHasVoted(false);
-      localStorage.removeItem(`vote_${params.id}`);
-    } catch (error) {
-      console.error('Error deleting vote:', error);
-      if (error instanceof Error) {
-        setError(error.message);
-      }
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -209,7 +173,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
 
           <div className="bg-white rounded-lg shadow p-6">
             <div className="text-center">
-              <Skeleton variant="image" className="h-64 w-full mb-6" />
+              <Skeleton variant="image" className="h-72 w-full mb-6" />
               <Skeleton variant="text" className="h-8 w-3/4 mx-auto mb-4" />
               <Skeleton variant="text" className="h-4 w-1/2 mx-auto" />
             </div>

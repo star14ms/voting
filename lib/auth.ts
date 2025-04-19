@@ -11,6 +11,17 @@ const authOptions: NextAuthConfig = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   })],
   secret: process.env.NEXTAUTH_SECRET,
+  callbacks: {
+    session: ({ session, user }) => {
+      return {
+        ...session,
+        user: {
+          ...session.user,
+          id: user.id,
+        },
+      };
+    },
+  },
 };
 
-export const { handlers, auth, signIn, signOut } = NextAuth(authOptions); 
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);

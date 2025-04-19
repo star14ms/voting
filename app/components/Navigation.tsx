@@ -30,9 +30,6 @@ export default function Navigation() {
     }
   };
 
-  console.log('Navigation - Session status:', status);
-  console.log('Navigation - Session data:', session);
-
   return (
     <nav className="bg-white shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

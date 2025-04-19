@@ -148,28 +148,17 @@ export async function voteForItem(voteId: string, itemId: number, userId: string
     // Check if user has already voted
     const hasVoted = await hasUserVoted(Number(voteId), userId);
     if (hasVoted) {
-      throw new Error('이미 투표하셨습니다.');
-    }
-
-    // Find or create VoteItemVote
-    const voteItemVote = await prisma.voteItemVote.findUnique({
-      where: {
-        voteItemId_voteId: {
-          voteItemId: itemId,
-          voteId: Number(voteId),
-        },
-      },
-    });
-
-    if (!voteItemVote) {
-      throw new Error('투표 항목을 찾을 수 없습니다.');
+      const voted_id = await getUserVoteItem(voteId, userId);
+      if (voted_id === Number(itemId)) {
+        throw new Error('이미 투표하셨습니다.');
+      }
     }
 
     // Increment vote count
     const updatedVoteItemVote = await prisma.voteItemVote.update({
       where: {
         voteItemId_voteId: {
-          voteItemId: itemId,
+          voteItemId: Number(itemId),
           voteId: Number(voteId),
         },
       },
@@ -196,7 +185,7 @@ export async function removeVote(voteId: string, itemId: number) {
     const voteItemVote = await prisma.voteItemVote.findUnique({
       where: {
         voteItemId_voteId: {
-          voteItemId: itemId,
+          voteItemId: Number(itemId),
           voteId: Number(voteId)
         }
       }
@@ -209,7 +198,7 @@ export async function removeVote(voteId: string, itemId: number) {
     const updatedVoteItemVote = await prisma.voteItemVote.update({
       where: {
         voteItemId_voteId: {
-          voteItemId: itemId,
+          voteItemId: Number(itemId),
           voteId: Number(voteId)
         }
       },
@@ -329,40 +318,82 @@ export async function getVotes(): Promise<VoteResponse[]> {
 }
 
 export async function hasUserVoted(voteId: number, userId: string): Promise<boolean> {
-  const existingVote = await prisma.userVotes.findUnique({
-    where: {
-      userId_voteId: {
-        userId: Number(userId),
-        voteId: voteId
+  const db = prisma;
+  try {
+    const existingVote = await db.userVotes.findUnique({
+      where: {
+        userId_voteId: {
+          userId: Number(userId),
+          voteId: Number(voteId)
+        }
       }
-    }
-  });
-  return !!existingVote;
+    });
+    return !!existingVote;
+  } catch (error) {
+    console.error('Error checking user vote:', error);
+    return false;
+  }
 }
 
-export async function getUserVoteItem(voteId: number, userId: string): Promise<number | null> {
-  const userVote = await prisma.userVotes.findUnique({
-    where: {
-      userId_voteId: {
-        userId: Number(userId),
-        voteId,
+export async function getUserVoteItem(voteId: string, userId: string): Promise<number | null> {
+  const db = prisma;
+  try {
+    const userVote = await db.userVotes.findUnique({
+      where: {
+        userId_voteId: {
+          userId: Number(userId),
+          voteId: Number(voteId)
+        }
       },
-    },
-    select: {
-      voteItemVoteId: true,
-    },
-  });
-  return userVote?.voteItemVoteId || null;
+      include: {
+        voteItemVote: true
+      }
+    });
+
+    return userVote?.voteItemVoteId || null;
+  } catch (error) {
+    console.error('Error getting user vote item:', error);
+    return null;
+  }
 }
 
 export async function recordUserVote(voteId: number, userId: string, voteItemVoteId: number): Promise<void> {
-  await prisma.userVotes.create({
-    data: {
-      userId: Number(userId),
-      voteId,
-      voteItemVoteId,
-    },
-  });
+  const db = prisma;
+  try {
+    // Check if user has already voted
+    const existingVote = await db.userVotes.findUnique({
+      where: {
+        userId_voteId: {
+          userId: Number(userId),
+          voteId: Number(voteId)
+        }
+      }
+    });
+
+    if (existingVote) {
+      // Update existing vote
+      await db.userVotes.update({
+        where: {
+          id: existingVote.id
+        },
+        data: {
+          voteItemVoteId
+        }
+      });
+    } else {
+      // Create new vote
+      await db.userVotes.create({
+        data: {
+          userId: Number(userId),
+          voteId: Number(voteId),
+          voteItemVoteId,
+        },
+      });
+    }
+  } catch (error) {
+    console.error('Error recording user vote:', error);
+    throw error;
+  }
 }
 
 export async function deleteUnusedVoteItems() {
