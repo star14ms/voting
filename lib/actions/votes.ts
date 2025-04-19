@@ -329,22 +329,22 @@ export async function getVotes(): Promise<VoteResponse[]> {
 }
 
 export async function hasUserVoted(voteId: number, userId: string): Promise<boolean> {
-  const userVote = await prisma.userVote.findUnique({
+  const existingVote = await prisma.userVotes.findUnique({
     where: {
       userId_voteId: {
-        userId,
-        voteId,
-      },
-    },
+        userId: Number(userId),
+        voteId: voteId
+      }
+    }
   });
-  return !!userVote;
+  return !!existingVote;
 }
 
 export async function getUserVoteItem(voteId: number, userId: string): Promise<number | null> {
-  const userVote = await prisma.userVote.findUnique({
+  const userVote = await prisma.userVotes.findUnique({
     where: {
       userId_voteId: {
-        userId,
+        userId: Number(userId),
         voteId,
       },
     },
@@ -356,9 +356,9 @@ export async function getUserVoteItem(voteId: number, userId: string): Promise<n
 }
 
 export async function recordUserVote(voteId: number, userId: string, voteItemVoteId: number): Promise<void> {
-  await prisma.userVote.create({
+  await prisma.userVotes.create({
     data: {
-      userId,
+      userId: Number(userId),
       voteId,
       voteItemVoteId,
     },

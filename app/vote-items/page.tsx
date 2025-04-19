@@ -8,6 +8,7 @@ import { deleteVoteItem, getVoteItems } from '@/lib/actions/vote-items';
 import Image from 'next/image';
 import Skeleton from '../components/Skeleton';
 import Link from 'next/link';
+import { getPublicUrl } from '@/lib/s3';
 
 type VoteItemWithStringDates = Omit<VoteItem, 'createdAt' | 'updatedAt'> & {
   createdAt: string;
@@ -31,7 +32,11 @@ export default function VoteItemsPage() {
   const loadVoteItems = async () => {
     try {
       const items = await getVoteItems();
-      setVoteItems(items);
+      setVoteItems(items.map(item => ({
+        ...item,
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString()
+      })));
     } catch (err) {
       console.error('Error loading vote items:', err);
     } finally {
@@ -88,7 +93,7 @@ export default function VoteItemsPage() {
               <div key={item.id} className="bg-white rounded-lg shadow">
                 <div className="relative h-48">
                   <Image
-                    src={item.image}
+                    src={getPublicUrl(item.image)}
                     alt={item.name}
                     fill
                     className="object-cover rounded-t-xl"

@@ -96,4 +96,6 @@ model userVotes {
   user           users        @relation(fields: [userId], references: [id])
   vote           Vote         @relation(fields: [voteId], references: [id])
   voteItemVote   VoteItemVote @relation(fields: [voteItemVoteId], references: [id])
+
+  @@unique([userId, voteId])
 }

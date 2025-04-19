@@ -19,7 +19,11 @@ export default function CreateVotePage() {
       try {
         setIsLoading(true);
         const items = await getVoteItems();
-        setVoteItems(items);
+        setVoteItems(items.map(item => ({
+          ...item,
+          createdAt: item.createdAt.toISOString(),
+          updatedAt: item.updatedAt.toISOString()
+        })));
       } catch (err) {
         console.error('Error fetching vote items:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch vote items');
