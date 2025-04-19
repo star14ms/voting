@@ -16,18 +16,13 @@ type VoteItemWithStringDates = Omit<VoteItem, 'createdAt' | 'updatedAt'> & {
 };
 
 export default function VoteItemsPage() {
-  const { data: session, status } = useSession();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [voteItems, setVoteItems] = useState<VoteItemWithStringDates[]>([]);
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/');
-    } else if (status === 'authenticated') {
-      loadVoteItems();
-    }
-  }, [status, router]);
+    loadVoteItems();
+  }, [router]);
 
   const loadVoteItems = async () => {
     try {
@@ -52,10 +47,6 @@ export default function VoteItemsPage() {
       console.error('Error deleting vote item:', err);
     }
   };
-
-  if (!session) {
-    return null;
-  }
 
   return (
     <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">

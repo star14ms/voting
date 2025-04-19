@@ -3,17 +3,15 @@
 import { signIn, signOut, useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function Navigation() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
-
+  const router = useRouter();
   const handleSignIn = async () => {
     try {
-      await signIn('google', {
-        callbackUrl: window.location.href,
-        redirect: true,
-      });
+      router.push('/auth/signin');
     } catch (error) {
       console.error('Sign in error:', error);
     }

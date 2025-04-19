@@ -238,7 +238,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
           <Link href="/" className="text-gray-600 hover:text-gray-900">
             ← 홈으로 돌아가기
           </Link>
-          {session?.user && (
+          {true && (
             <div className="flex gap-2">
               <button
                 onClick={handleResetVotes}

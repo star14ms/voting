@@ -11,16 +11,31 @@ const authOptions: NextAuthConfig = {
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
   })],
   secret: process.env.NEXTAUTH_SECRET,
+  basePath: '/api/auth',
   callbacks: {
-    session: ({ session, user }) => {
+    session: ({ session, token }) => {
       return {
         ...session,
         user: {
           ...session.user,
-          id: user.id,
+          id: token.sub,
         },
       };
     },
+    jwt: ({ token, user }) => {
+      if (user) {
+        token.sub = user.id;
+      }
+      return token;
+    },
+  },
+  pages: {
+    signIn: '/auth/signin',
+    error: '/auth/error',
+    signOut: '/auth/signout',
+  },
+  session: {
+    strategy: 'jwt',
   },
 };
 
