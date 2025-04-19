@@ -237,6 +237,12 @@ export async function resetVotes(voteId: string) {
       }
     });
 
+    await prisma.userVotes.deleteMany({
+      where: {
+        voteId: Number(voteId)
+      }
+    });
+
     revalidatePath(`/votes/${voteId}`);
     return getVote(voteId);
   } catch (error) {

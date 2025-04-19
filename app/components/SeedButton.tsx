@@ -24,6 +24,8 @@ export default function SeedButton() {
       const result = await seedDatabase(selectedSet);
       if (result.success) {
         router.refresh();
+        // Dispatch custom event for vote creation
+        window.dispatchEvent(new Event('voteCreated'));
       } else {
         console.error('Failed to seed database:', result.error);
       }
@@ -46,7 +48,7 @@ export default function SeedButton() {
 
       <Dialog
         open={isOpen}
-        onClose={() => setIsOpen(false)}
+        onClose={() => !isLoading && setIsOpen(false)}
         className="relative z-50"
       >
         <div className="fixed inset-0 bg-black/25" aria-hidden="true" />
@@ -77,7 +79,8 @@ export default function SeedButton() {
                       value={key}
                       checked={selectedSet === key}
                       onChange={() => setSelectedSet(key as SampleSet)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled={isLoading}
                     />
                     <span className="text-sm text-gray-700">{label}</span>
                   </label>
@@ -88,14 +91,15 @@ export default function SeedButton() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 type="button"
-                className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={() => setIsOpen(false)}
+                disabled={isLoading}
               >
                 취소
               </button>
               <button
                 type="button"
-                className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                className="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 onClick={handleSeed}
                 disabled={isLoading}
               >

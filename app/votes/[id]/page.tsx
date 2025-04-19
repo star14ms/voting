@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getPublicUrl } from '@/lib/s3';
-import { getVote, voteForItem, removeVote, resetVotes, deleteVote, getUserVoteItem } from '@/lib/actions/votes';
+import { getVote, voteForItem, removeVote, resetVotes, getUserVoteItem } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
 import VoteRemoveModal from '@/app/components/VoteRemoveModal';
 import { useSession } from 'next-auth/react';
@@ -55,6 +55,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const authenticated = session?.user?.id !== undefined;
 
   useEffect(() => {
     if (!params?.id) {
@@ -193,30 +194,118 @@ export default function VotePage({ params }: { params: { id: string } }) {
     return (
       <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
         <div className="w-full max-w-6xl">
-          <div className="flex items-center justify-between mb-8">
-            <Skeleton variant="text" className="w-32" />
-            <div className="flex gap-2">
-              <Skeleton variant="button" />
-              <Skeleton variant="button" />
+          <div className="bg-white rounded-lg shadow p-6 mb-8">
+            <div className="text-center">
+              <Skeleton variant="image" className="h-64 w-full mb-6" />
+              <Skeleton variant="text" className="h-8 w-3/4 mx-auto mb-4" />
+              <Skeleton variant="text" className="h-4 w-1/2 mx-auto" />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-lg p-8 mb-8 w-full">
+            <h2 className="text-3xl font-bold text-gray-900 mb-10 text-center">
+              🏆 상위 3위
+            </h2>
+            <div className="flex flex-col md:flex-row justify-center gap-6 relative mb-16">
+              {[1, 0, 2].map((position) => (
+                <div key={position} className="flex flex-col items-center justify-end">
+                  <div className={`relative rounded-xl shadow-xl ${
+                    position === 0 ? 'bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-t-[6px] border-yellow-400' :
+                    position === 1 ? 'bg-gradient-to-br from-gray-50 via-white to-gray-50 border-t-4 border-gray-400' :
+                    'bg-gradient-to-br from-orange-50 via-white to-orange-50 border-t-4 border-orange-400'
+                  } transform hover:scale-[1.02] transition-all duration-300 relative`}>
+                    <div className="relative">
+                      <div className={`relative mb-4 overflow-hidden rounded-t-xl ${
+                        position === 0 ? 'bg-yellow-50' :
+                        position === 1 ? 'bg-gray-50' :
+                        'bg-orange-50'
+                      }`}>
+                        <Skeleton variant="image" className="h-[440px] w-[330px]" />
+                      </div>
+                      <div className="absolute -top-6 -left-6 flex items-center justify-center">
+                        <div className={`${
+                          position === 0 ? 'w-14 h-14 bg-gradient-to-r from-yellow-400 to-yellow-300' :
+                          position === 1 ? 'w-12 h-12 bg-gradient-to-r from-gray-300 to-gray-200' :
+                          'w-12 h-12 bg-gradient-to-r from-orange-300 to-orange-200'
+                        } shadow-lg rounded-full flex items-center justify-center text-white font-bold text-2xl z-10`}>
+                          <div className={`rounded-full flex items-center justify-center border-2 ${
+                            position === 0 ? 'w-12 h-12 border-yellow-400' :
+                            position === 1 ? 'w-10 h-10 border-gray-400' :
+                            'w-10 h-10 border-orange-400'
+                          }`}>
+                            {position + 1}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className={`p-6 ${
+                      position === 0 ? 'bg-yellow-50' :
+                      position === 1 ? 'bg-gray-50' :
+                      'bg-orange-50'
+                    }`}>
+                      <Skeleton variant="text" className={`${
+                        position === 0 ? 'text-2xl text-yellow-800' :
+                        position === 1 ? 'text-xl text-gray-800' :
+                        'text-xl text-orange-800'
+                      } h-8 w-3/4 mb-3`} />
+                      <Skeleton variant="text" className={`${
+                        position === 0 ? 'text-yellow-700' :
+                        position === 1 ? 'text-gray-700' :
+                        'text-orange-700'
+                      } h-4 w-full mb-4`} />
+                      <div className="flex justify-between items-center">
+                        <Skeleton variant="text" className={`${
+                          position === 0 ? 'text-xl text-yellow-600' :
+                          position === 1 ? 'text-lg text-gray-600' :
+                          'text-lg text-orange-600'
+                        } h-6 w-20`} />
+                        <Skeleton variant="button" className={`${
+                          position === 0 ? 'bg-yellow-100' :
+                          position === 1 ? 'bg-gray-100' :
+                          'bg-orange-100'
+                        } w-24 h-8`} />
+                      </div>
+                    </div>
+                  </div>
+                  <div className={`w-full relative ${
+                    position === 0 ? 'h-[200px] bg-gradient-to-b from-yellow-400/20 to-transparent' :
+                    position === 1 ? 'h-[160px] bg-gradient-to-b from-gray-400/20 to-transparent' :
+                    'h-[120px] bg-gradient-to-b from-orange-400/20 to-transparent'
+                  }`}>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className={`text-4xl font-bold ${
+                        position === 0 ? 'text-yellow-600/50' :
+                        position === 1 ? 'text-gray-600/50' :
+                        'text-orange-600/50'
+                      }`}>
+                        {position + 1}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <div className="bg-white rounded-lg shadow p-6">
-            <div className="text-center">
-              <Skeleton variant="image" className="h-72 w-full mb-6" />
-              <Skeleton variant="text" className="h-8 w-3/4 mx-auto mb-4" />
-              <Skeleton variant="text" className="h-4 w-1/2 mx-auto" />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">전체 항목</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {[...Array(4)].map((_, i) => (
-                <div key={i} className="bg-white rounded-xl shadow p-4">
-                  <Skeleton variant="image" className="h-48 mb-4" />
-                  <Skeleton variant="text" className="mb-2" />
-                  <Skeleton variant="text" className="w-3/4" />
-                  <div className="flex justify-between items-center mt-4">
-                    <Skeleton variant="text" className="w-24" />
-                    <Skeleton variant="button" />
+                <div key={i} className="bg-white rounded-xl shadow-md transition-all duration-300 relative">
+                  <div className="flex">
+                    <div className="relative w-[140px] h-[200px]">
+                      <div className="relative h-full overflow-hidden rounded-l-xl">
+                        <Skeleton variant="image" className="h-full w-full" />
+                      </div>
+                    </div>
+                    <div className="p-6">
+                      <Skeleton variant="text" className="h-6 w-3/4 mb-2" />
+                      <Skeleton variant="text" className="h-4 w-full mb-2" />
+                      <div className="flex justify-between items-center">
+                        <Skeleton variant="text" className="h-6 w-20" />
+                        <Skeleton variant="button" className="w-24 h-8" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -297,38 +386,6 @@ export default function VotePage({ params }: { params: { id: string } }) {
   return (
     <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
       <div className="w-full max-w-6xl">
-        <div className="flex items-center justify-between mb-8">
-          <Link href="/" className="text-gray-600 hover:text-gray-900">
-            ← 홈으로 돌아가기
-          </Link>
-          {true && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleResetVotes}
-                disabled={isResetting}
-                className={`${
-                  isResetting 
-                    ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-red-500 hover:bg-red-600'
-                } text-white px-4 py-2 rounded-lg transition-colors`}
-              >
-                {isResetting ? '초기화 중...' : '투표 초기화'}
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isDeleting}
-                className={`${
-                  isDeleting 
-                    ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-red-700 hover:bg-red-800'
-                } text-white px-4 py-2 rounded-lg transition-colors`}
-              >
-                {isDeleting ? '삭제 중...' : '투표 삭제'}
-              </button>
-            </div>
-          )}
-        </div>
-
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="text-center">
             <div className="relative h-64 w-full mb-6">
@@ -357,14 +414,14 @@ export default function VotePage({ params }: { params: { id: string } }) {
               const style = item.rank === 1 ? medalStyles.first : 
                            item.rank === 2 ? medalStyles.second : medalStyles.third;
               return (
-                <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start">
+                <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3">
                   <div className={`relative rounded-xl shadow-xl ${style.card} ${
                     index === 0 ? 'md:order-2' : 
                     index === 1 ? 'md:order-1' : 
                     'md:order-3'
                   }`}>
                     <div className="relative">
-                      <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl`}>
+                      <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl h-[440px]`}>
                         <Image
                           src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
                           alt={item.voteItem.name}
@@ -406,7 +463,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                             {item.voteCount.toLocaleString()}표
                           </span>
                         </div>
-                        {selectedItem === item.voteItem.id ? (
+                        {selectedItem === item.voteItem.id && !isVoting ? (
                           <button
                             onClick={() => handleRemoveVote(item.voteItem.id)}
                             disabled={isVoting}
@@ -454,12 +511,12 @@ export default function VotePage({ params }: { params: { id: string } }) {
               <div
                 key={item.voteItem.id}
                 className={`bg-white rounded-xl shadow-md transition-all duration-300 relative ${
-                  selectedItem === item.voteItem.id ? 'outline outline-4 outline-blue-500 outline-offset-2 bg-blue-50' : ''
+                  selectedItem === item.voteItem.id && !isVoting ? 'outline outline-4 outline-blue-500 outline-offset-2 bg-blue-50' : ''
                 }`}
               >
                 <div className="flex">
-                  <div className="relative w-1/2">
-                    <div className="relative h-48 overflow-hidden rounded-l-xl">
+                  <div className="relative w-[150px] h-[200px] flex-shrink-0">
+                    <div className="relative h-full overflow-hidden rounded-l-xl">
                       <Image
                         src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
                         alt={item.voteItem.name}
@@ -487,13 +544,15 @@ export default function VotePage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                   </div>
-                  <div className="w-1/2 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.voteItem.name}</h3>
-                    <p className="text-gray-600 mb-2">{item.voteItem.description}</p>
+                  <div className="p-6 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{item.voteItem.name}</h3>
+                      <p className="text-gray-600 mb-2">{item.voteItem.description}</p>
+                    </div>
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-700">{item.voteCount.toLocaleString()}표</span>
                       <div className="w-24 text-right">
-                        {selectedItem === item.voteItem.id ? (
+                        {selectedItem === item.voteItem.id && !isVoting ? (
                           <button
                             onClick={() => handleRemoveVote(item.voteItem.id)}
                             disabled={isVoting}
@@ -521,6 +580,36 @@ export default function VotePage({ params }: { params: { id: string } }) {
               </div>
             ))}
           </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-8">
+          <div></div>
+          {authenticated && (
+            <div className="flex gap-2">
+              <button
+                onClick={handleResetVotes}
+                disabled={isResetting}
+                className={`${
+                  isResetting 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : 'bg-red-500 hover:bg-red-600'
+                } text-white px-4 py-2 rounded-lg transition-colors`}
+              >
+                {isResetting ? '초기화 중...' : '투표 초기화'}
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={isDeleting}
+                className={`${
+                  isDeleting 
+                    ? 'bg-gray-300 cursor-not-allowed' 
+                    : 'bg-red-700 hover:bg-red-800'
+                } text-white px-4 py-2 rounded-lg transition-colors`}
+              >
+                {isDeleting ? '삭제 중...' : '투표 삭제'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
       <VoteRemoveModal

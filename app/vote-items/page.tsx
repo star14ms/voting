@@ -63,13 +63,23 @@ export default function VoteItemsPage() {
 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-6">
-                <Skeleton variant="image" className="h-48 mb-4" />
-                <Skeleton variant="text" className="mb-2" />
-                <Skeleton variant="text" className="w-3/4" />
-                <div className="flex justify-end mt-4">
-                  <Skeleton variant="button" />
+            {[...Array(12)].map((_, i) => (
+              <div key={i} className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="flex">
+                  <div className="w-[150px] h-[200px] relative flex-shrink-0">
+                    <div className="relative h-full overflow-hidden">
+                      <Skeleton variant="image" className="h-full w-full" />
+                    </div>
+                  </div>
+                  <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div>
+                      <Skeleton variant="text" className="h-6 w-3/4 mb-2" />
+                      <Skeleton variant="text" className="h-4 w-full" />
+                    </div>
+                    <div className="flex justify-end">
+                      <Skeleton variant="button" className="w-16 h-8" />
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -81,27 +91,31 @@ export default function VoteItemsPage() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {voteItems.map((item) => (
-              <div key={item.id} className="bg-white rounded-lg shadow">
-                <div className="relative h-48">
-                  <Image
-                    src={getPublicUrl(item.image)}
-                    alt={item.name}
-                    fill
-                    className="object-cover rounded-t-xl"
-                    priority
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  />
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">{item.name}</h3>
-                  <p className="text-sm text-gray-500 mb-4">{item.description}</p>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                    >
-                      삭제
-                    </button>
+              <div key={item.id} className="bg-white rounded-lg shadow overflow-hidden">
+                <div className="flex">
+                  <div className="w-[150px] h-[200px] relative">
+                    <Image
+                      src={getPublicUrl(item.image)}
+                      alt={item.name}
+                      fill
+                      className="object-cover"
+                      priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    />
+                  </div>
+                  <div className="flex-1 p-4 flex flex-col justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">{item.name}</h3>
+                      <p className="text-sm text-gray-500">{item.description}</p>
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        삭제
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

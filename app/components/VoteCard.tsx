@@ -7,7 +7,7 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import VoteRemoveModal from './VoteRemoveModal';
 import { VoteResponse } from '@/app/types';
 import { getPublicUrl } from '@/lib/s3';
-
+import { useRouter } from 'next/navigation';
 interface VoteCardProps {
   vote: VoteResponse;
 }
@@ -21,6 +21,7 @@ function calculateDday(endDate: Date) {
 
 export default function VoteCard({ vote }: VoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const router = useRouter();
 
   const handleRemoveClick = (e: React.MouseEvent) => {
     e.preventDefault();

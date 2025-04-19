@@ -7,27 +7,42 @@ import { VoteResponse } from '@/app/types';
 import Skeleton from './components/Skeleton';
 import VoteCard from '@/app/components/VoteCard';
 import SeedButton from './components/SeedButton';
+import { useRouter } from 'next/navigation';
 
 export default function HomePage() {
   const [votes, setVotes] = useState<VoteResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
 
+  const fetchVotes = async () => {
+    try {
+      const data = await getVotes();
+      setVotes(data);
+    } catch (err) {
+      console.error('Error fetching votes:', err);
+      setError(err instanceof Error ? err.message : 'Failed to fetch votes');
+    }
+  };
+
+  // Initial load
   useEffect(() => {
-    const fetchVotes = async () => {
-      try {
-        setIsLoading(true);
-        const data = await getVotes();
-        setVotes(data);
-      } catch (err) {
-        console.error('Error fetching votes:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch votes');
-      } finally {
-        setIsLoading(false);
-      }
+    fetchVotes().finally(() => setIsLoading(false));
+  }, []);
+
+  // Add event listener for custom events
+  useEffect(() => {
+    const handleVoteChange = () => {
+      fetchVotes();
     };
 
-    fetchVotes();
+    window.addEventListener('voteCreated', handleVoteChange);
+    window.addEventListener('voteDeleted', handleVoteChange);
+
+    return () => {
+      window.removeEventListener('voteCreated', handleVoteChange);
+      window.removeEventListener('voteDeleted', handleVoteChange);
+    };
   }, []);
 
   if (error) {
@@ -61,12 +76,24 @@ export default function HomePage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow p-6">
-                <Skeleton variant="image" className="mb-4" />
-                <Skeleton variant="text" className="mb-4" />
-                <Skeleton variant="text" className="w-1/2 mb-4" />
-                <div className="flex justify-end mt-4">
-                  <Skeleton variant="text" />
+              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="relative h-48">
+                  <div className="relative h-full overflow-hidden">
+                    <Skeleton variant="image" className="h-full w-full" />
+                  </div>
+                  <div className="absolute right-2 top-2">
+                    <Skeleton variant="button" className="w-10 h-10 rounded-full" />
+                  </div>
+                </div>
+                <div className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Skeleton variant="text" className="h-6 w-12" />
+                    <Skeleton variant="text" className="h-6 w-3/4" />
+                  </div>
+                  <Skeleton variant="text" className="h-4 w-full mb-4" />
+                  <div className="flex justify-end">
+                    <Skeleton variant="text" className="h-4 w-48" />
+                  </div>
                 </div>
               </div>
             ))}

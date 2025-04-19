@@ -15,24 +15,30 @@ interface VoteRemoveModalProps {
 
 export default function VoteRemoveModal({ isOpen, onClose, voteId, voteTitle }: VoteRemoveModalProps) {
   const [deleteItems, setDeleteItems] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
 
   const handleDelete = async () => {
     try {
+      setIsDeleting(true);
       await deleteVote(voteId.toString(), deleteItems);
       onClose();
+      // Dispatch custom event for vote deletion
+      window.dispatchEvent(new Event('voteDeleted'));
       if (pathname?.includes('/votes/')) {
         router.push('/');
       }
     } catch (error) {
       console.error('Error deleting vote:', error);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
     <Transition.Root show={isOpen} as={Fragment}>
-      <Dialog as="div" className="relative z-10" onClose={onClose}>
+      <Dialog as="div" className="relative z-10" onClose={() => !isDeleting && onClose()}>
         <Transition.Child
           as={Fragment}
           enter="ease-out duration-300"
@@ -60,8 +66,9 @@ export default function VoteRemoveModal({ isOpen, onClose, voteId, voteTitle }: 
                 <div className="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
                   <button
                     type="button"
-                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={onClose}
+                    disabled={isDeleting}
                   >
                     <span className="sr-only">닫기</span>
                     <XMarkIcon className="h-6 w-6" aria-hidden="true" />
@@ -86,7 +93,8 @@ export default function VoteRemoveModal({ isOpen, onClose, voteId, voteTitle }: 
                           type="checkbox"
                           checked={deleteItems}
                           onChange={(e) => setDeleteItems(e.target.checked)}
-                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+                          className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                          disabled={isDeleting}
                         />
                         <span className="ml-2 text-sm text-gray-600">
                           연결된 투표 항목도 삭제하기 (더 이상 사용되지 않는 항목만)
@@ -98,15 +106,17 @@ export default function VoteRemoveModal({ isOpen, onClose, voteId, voteTitle }: 
                 <div className="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
                   <button
                     type="button"
-                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                    className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={handleDelete}
+                    disabled={isDeleting}
                   >
-                    삭제
+                    {isDeleting ? '삭제 중...' : '삭제'}
                   </button>
                   <button
                     type="button"
-                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                    className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed"
                     onClick={onClose}
+                    disabled={isDeleting}
                   >
                     취소
                   </button>
