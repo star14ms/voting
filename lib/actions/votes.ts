@@ -27,9 +27,27 @@ export async function createVote(formData: FormData) {
     const startDate = formData.get('startDate') as string;
     const endDate = formData.get('endDate') as string;
     const image = formData.get('image') as string;
-    const existingItems = JSON.parse(formData.get('existingItems') as string);
-    const newItems = JSON.parse(formData.get('newItems') as string);
+    
+    // Get and validate existingItems
+    const existingItemsStr = formData.get('existingItems') as string;
+    const existingItems = existingItemsStr ? JSON.parse(existingItemsStr) : [];
+    if (!Array.isArray(existingItems)) {
+      throw new Error('기존 항목 데이터가 올바르지 않습니다');
+    }
 
+    // Get and validate newItems
+    const newItemsStr = formData.get('newItems') as string;
+    const newItems = newItemsStr ? JSON.parse(newItemsStr) : [];
+    if (!Array.isArray(newItems)) {
+      throw new Error('새 항목 데이터가 올바르지 않습니다');
+    }
+
+    // Validate required fields
+    if (!title || !type || !startDate || !endDate || !image) {
+      throw new Error('필수 항목이 누락되었습니다');
+    }
+
+    // Create the vote first
     const vote = await prisma.vote.create({
       data: {
         title,
@@ -37,29 +55,59 @@ export async function createVote(formData: FormData) {
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         image,
+      },
+    });
+
+    // Create voteItemVote records for existing items
+    if (existingItems.length > 0) {
+      await prisma.voteItemVote.createMany({
+        data: existingItems.map((itemId: number) => ({
+          voteId: vote.id,
+          voteItemId: itemId,
+          voteCount: 0,
+        })),
+      });
+    }
+
+    // Create new items and their voteItemVote records
+    if (newItems.length > 0) {
+      for (const item of newItems) {
+        const newVoteItem = await prisma.voteItem.create({
+          data: {
+            name: item.name,
+            description: item.description,
+            image: item.image,
+          },
+        });
+
+        await prisma.voteItemVote.create({
+          data: {
+            voteId: vote.id,
+            voteItemId: newVoteItem.id,
+            voteCount: 0,
+          },
+        });
+      }
+    }
+
+    // Fetch the complete vote with all relations
+    const completeVote = await prisma.vote.findUnique({
+      where: { id: vote.id },
+      include: {
         voteItemVote: {
-          create: [
-            ...existingItems.map((item: { id: number }) => ({
-              voteItemId: item.id,
-              voteCount: 0,
-            })),
-            ...newItems.map((item: { name: string; description: string; image: string }) => ({
-              voteItem: {
-                create: {
-                  name: item.name,
-                  description: item.description,
-                  image: item.image,
-                },
-              },
-              voteCount: 0,
-            })),
-          ],
+          include: {
+            voteItem: true,
+          },
         },
       },
     });
 
+    if (!completeVote) {
+      throw new Error('투표를 찾을 수 없습니다');
+    }
+
     revalidatePath('/');
-    return vote;
+    return completeVote;
   } catch (error) {
     console.error('Error creating vote:', error);
     throw new Error('투표 생성에 실패했습니다');
@@ -183,14 +231,46 @@ export async function resetVotes(voteId: string) {
   }
 }
 
-export async function deleteVote(voteId: string) {
+export async function deleteVote(voteId: string, deleteItems: boolean = false) {
   try {
+    // First check if the vote exists
+    const vote = await prisma.vote.findUnique({
+      where: {
+        id: Number(voteId)
+      }
+    });
+
+    if (!vote) {
+      throw new Error('삭제할 투표를 찾을 수 없습니다');
+    }
+
     // First delete all VoteItemVote records
     await prisma.voteItemVote.deleteMany({
       where: {
         voteId: Number(voteId)
       }
     });
+
+    // If deleteItems is true, find and delete unused VoteItems
+    if (deleteItems) {
+      const voteItems = await prisma.voteItem.findMany({
+        where: {
+          voteItemVote: {
+            none: {} // Find items with no VoteItemVote records
+          }
+        }
+      });
+
+      if (voteItems.length > 0) {
+        await prisma.voteItem.deleteMany({
+          where: {
+            id: {
+              in: voteItems.map(item => item.id)
+            }
+          }
+        });
+      }
+    }
 
     // Then delete the vote
     await prisma.vote.delete({
@@ -229,5 +309,37 @@ export async function getVotes(): Promise<VoteResponse[]> {
   } catch (error) {
     console.error('Error fetching votes:', error);
     throw new Error('Failed to fetch votes');
+  }
+}
+
+export async function deleteUnusedVoteItems() {
+  try {
+    // Find all vote items that have no VoteItemVote records
+    const unusedItems = await prisma.voteItem.findMany({
+      where: {
+        voteItemVote: {
+          none: {}
+        }
+      }
+    });
+
+    if (unusedItems.length === 0) {
+      return { message: '삭제할 항목이 없습니다.' };
+    }
+
+    // Delete the unused items
+    await prisma.voteItem.deleteMany({
+      where: {
+        id: {
+          in: unusedItems.map(item => item.id)
+        }
+      }
+    });
+
+    revalidatePath('/vote-items');
+    return { message: `${unusedItems.length}개의 미사용 항목이 삭제되었습니다.` };
+  } catch (error) {
+    console.error('Error deleting unused vote items:', error);
+    throw new Error('미사용 항목 삭제에 실패했습니다');
   }
 } 

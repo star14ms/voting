@@ -18,7 +18,6 @@ export default function CreateVoteForm({ initialVoteItems }: CreateVoteFormProps
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [type, setType] = useState('CELEBRITY');
-  const [voteImage, setVoteImage] = useState<File | null>(null);
   const [voteImagePreview, setVoteImagePreview] = useState<string>('');
   const [existingVoteItems, setExistingVoteItems] = useState<ExistingVoteItem[]>([
     { id: 0, name: '', description: '', image: '' },

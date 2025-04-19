@@ -26,7 +26,7 @@ const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
 export async function uploadToS3(file: File): Promise<string> {
   try {
     const s3Client = getS3Client();
-    const key = `uploads/${Date.now()}-${file.name}`;
+    const key = `images/${Date.now()}-${file.name}`;
     const buffer = await file.arrayBuffer();
     
     const command = new PutObjectCommand({

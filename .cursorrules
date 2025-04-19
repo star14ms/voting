@@ -16,6 +16,20 @@
   - Confirmation dialogs
 - Console logs and technical messages can remain in English
 
+## Modal Design Rules
+- All modals should follow the same design pattern:
+  - Use `@headlessui/react` Dialog component
+  - Background overlay: `bg-black bg-opacity-25`
+  - Panel styling: `w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all`
+  - Title: `text-lg font-medium leading-6 text-gray-900`
+  - Content: `mt-2 text-sm text-gray-500`
+  - Warning text: `text-sm text-red-500 mt-2`
+  - Button container: `mt-4 flex justify-end space-x-3`
+  - Cancel button: `inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2`
+  - Action button: `inline-flex justify-center rounded-md border border-transparent bg-red-100 px-4 py-2 text-sm font-medium text-red-900 hover:bg-red-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2`
+  - Include warning text "이 작업은 되돌릴 수 없습니다." for destructive actions
+  - Use consistent transition animations
+
 ## Database
 - Using Prisma with Neon (PostgreSQL) as the cloud database
 - Database URL is stored in environment variables

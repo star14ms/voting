@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getPublicUrl } from '@/lib/s3';
 import { getVote, voteForItem, removeVote, resetVotes, deleteVote } from '@/lib/actions/votes';
 import { VoteResponse } from '@/app/types';
+import VoteRemoveModal from '@/components/VoteRemoveModal';
 
 export default function VotePage({ params }: { params: { id: string } }) {
   const router = useRouter();
@@ -313,35 +314,13 @@ export default function VotePage({ params }: { params: { id: string } }) {
           ))}
         </div>
 
-        {/* Delete Confirmation Dialog */}
         {showDeleteConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">투표 삭제 확인</h3>
-              <p className="text-gray-600 mb-6">
-                이 투표를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
-              </p>
-              <div className="flex justify-end gap-4">
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleDeleteVote}
-                  disabled={isDeleting}
-                  className={`${
-                    isDeleting 
-                      ? 'bg-gray-300 cursor-not-allowed' 
-                      : 'bg-red-700 hover:bg-red-800'
-                  } text-white px-4 py-2 rounded-lg transition-colors`}
-                >
-                  {isDeleting ? '삭제 중...' : '삭제'}
-                </button>
-              </div>
-            </div>
-          </div>
+          <VoteRemoveModal
+            isOpen={showDeleteConfirm}
+            onClose={() => setShowDeleteConfirm(false)}
+            voteId={vote.id}
+            voteTitle={vote.title}
+          />
         )}
       </div>
     </main>
