@@ -7,51 +7,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Account {
+model users {
+  id            Int       @id @default(autoincrement())
+  name          String?   @db.VarChar(255)
+  email         String?   @db.VarChar(255)
+  emailVerified DateTime? @map("emailVerified") @db.Timestamptz
+  image         String?   @db.Text
+  accounts      accounts[]
+  sessions      sessions[]
+  userVotes     userVotes[]
+}
+
+model accounts {
   id                Int     @id @default(autoincrement())
-  userId            Int
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String?
-  access_token      String?
+  userId            Int     @map("userId")
+  type              String  @db.VarChar(255)
+  provider          String  @db.VarChar(255)
+  providerAccountId String  @map("providerAccountId") @db.VarChar(255)
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
   expires_at        BigInt?
-  token_type        String?
-  scope             String?
-  id_token          String?
-  session_state     String?
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token_type        String? @db.Text
+  scope             String? @db.Text
+  id_token          String? @db.Text
+  session_state     String? @db.Text
+  user              users   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
 
-model Session {
+model sessions {
   id           Int      @id @default(autoincrement())
-  sessionToken String   @unique
-  userId       Int
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionToken String   @unique @map("sessionToken") @db.VarChar(255)
+  userId       Int      @map("userId")
+  expires      DateTime @db.Timestamptz
+  user         users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-model User {
-  id            Int        @id @default(autoincrement())
-  name          String?
-  email         String?    @unique
-  emailVerified DateTime?
-  image         String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-  accounts      Account[]
-  sessions      Session[]
-  userVotes     UserVote[]
-}
-
-model VerificationToken {
+model verification_token {
   identifier String
-  token      String   @unique
-  expires    DateTime
+  token      String   @db.Text
+  expires    DateTime @db.Timestamptz
 
-  @@unique([identifier, token])
+  @@id([identifier, token])
 }
 
 model Vote {
@@ -63,7 +61,7 @@ model Vote {
   updatedAt    DateTime       @updatedAt
   startDate    DateTime       @default(now())
   endDate      DateTime
-  userVotes    UserVote[]
+  userVotes    userVotes[]
   voteItemVote VoteItemVote[]
 }
 
@@ -82,22 +80,20 @@ model VoteItemVote {
   voteItemId Int
   voteId     Int
   voteCount  Int        @default(0)
-  userVotes  UserVote[]
+  userVotes  userVotes[]
   vote       Vote       @relation(fields: [voteId], references: [id])
   voteItem   VoteItem   @relation(fields: [voteItemId], references: [id])
 
   @@unique([voteItemId, voteId])
 }
 
-model UserVote {
+model userVotes {
   id             Int          @id @default(autoincrement())
   userId         Int
   voteId         Int
   voteItemVoteId Int
   createdAt      DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id])
+  user           users        @relation(fields: [userId], references: [id])
   vote           Vote         @relation(fields: [voteId], references: [id])
   voteItemVote   VoteItemVote @relation(fields: [voteItemVoteId], references: [id])
-
-  @@unique([userId, voteId])
 }

@@ -1,13 +1,11 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import { PrismaClient } from '@prisma/client';
+import PostgresAdapter from '@auth/pg-adapter';
+import { Pool } from '@neondatabase/serverless';
 import type { NextAuthConfig } from 'next-auth';
 
-const prisma = new PrismaClient();
-
 const authOptions: NextAuthConfig = {
-  adapter: PrismaAdapter(prisma),
+  adapter: PostgresAdapter(new Pool({ connectionString: process.env.DATABASE_URL })),
   providers: [GoogleProvider({
     clientId: process.env.GOOGLE_CLIENT_ID!,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
