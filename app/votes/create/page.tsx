@@ -8,7 +8,7 @@ import { getVoteItems } from '@/lib/actions/vote-items';
 import { VoteItem, SimpleVoteItem } from '@/app/types';
 import { uploadFile, createVote } from '@/lib/actions/votes';
 import { getPublicUrl } from '@/lib/s3';
-import SelectVoteItemModalClient from '@/app/components/SelectVoteItemModalClient';
+import SelectVoteItemModal from '@/app/components/SelectVoteItemModal';
 import { useSession } from 'next-auth/react';
 
 type ExistingVoteItem = SimpleVoteItem;
@@ -470,14 +470,11 @@ export default function CreateVotePage() {
       </div>
 
       {isModalOpen && (
-        <SelectVoteItemModalClient
+        <SelectVoteItemModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSelect={handleSelectExistingItem}
-          items={voteItems.map(item => ({
-            ...item,
-            imageUrl: getPublicUrl(item.image)
-          }))}
+          items={voteItems}
         />
       )}
     </main>

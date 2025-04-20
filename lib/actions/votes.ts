@@ -1,6 +1,6 @@
 'use server';
 
-import { prisma } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 import { uploadToS3 } from '@/lib/s3';
 import { revalidatePath } from 'next/cache';
 import { VoteResponse } from '@/app/types';
