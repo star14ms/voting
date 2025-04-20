@@ -264,6 +264,12 @@ export async function deleteVote(voteId: string, deleteItems: boolean = false) {
       throw new Error('삭제할 투표를 찾을 수 없습니다');
     }
 
+    await prisma.userVotes.deleteMany({
+      where: {
+        voteId: Number(voteId)
+      }
+    });
+
     // First delete all VoteItemVote records
     await prisma.voteItemVote.deleteMany({
       where: {

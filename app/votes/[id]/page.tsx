@@ -364,6 +364,8 @@ export default function VotePage({ params }: { params: { id: string } }) {
 
   for (let i = 0; i < sortedItems.length; i++) {
     const item = sortedItems[i];
+    if (!item) continue; // Skip if item is undefined
+    
     if (item.voteCount !== currentVotes) {
       currentRank += skipCount;
       currentVotes = item.voteCount || 0;
@@ -373,14 +375,15 @@ export default function VotePage({ params }: { params: { id: string } }) {
     skipCount++;
   }
 
-  // Get top 3 items for display
-  const top3Items = rankedItems.filter(item => item.rank <= 3);
-  top3Items.sort((a, b) => a.rank - b.rank);
+  // Get top 3 items for display, ensuring they exist
+  const top3Items = rankedItems
+    .filter(item => item && item.rank <= 3)
+    .sort((a, b) => (a?.rank || 0) - (b?.rank || 0));
 
   // Get remaining items for the list in descending ID order
   const remainingItems = vote.voteItemVote
-    .filter(item => !top3Items.some(topItem => topItem.voteItem.id === item.voteItem.id))
-    .sort((a, b) => b.voteItem.id - a.voteItem.id);
+    .filter(item => !top3Items.some(topItem => topItem?.voteItem?.id === item?.voteItem?.id))
+    .sort((a, b) => (b?.voteItem?.id || 0) - (a?.voteItem?.id || 0));
 
   return (
     <div className="flex min-h-screen flex-col items-center p-8 bg-gray-50">
@@ -409,97 +412,101 @@ export default function VotePage({ params }: { params: { id: string } }) {
             🏆 상위 3위
           </h2>
           <div className="flex flex-col md:flex-row justify-center gap-6 relative mb-16">
-            {[top3Items[1], top3Items[0], top3Items[2]].map((item, index) => {
-              const style = item.rank === 1 ? medalStyles.first : 
-                           item.rank === 2 ? medalStyles.second : medalStyles.third;
-              return (
-                <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3 group">
-                  <div className={`relative rounded-xl shadow-xl w-full ${style.card} transform transition-all duration-300 hover:scale-[1.02] ${
-                    index === 0 ? 'md:order-2' : 
-                    index === 1 ? 'md:order-1' : 
-                    'md:order-3'
-                  }`}>
-                    <div className="relative">
-                      <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl h-[436px]`}>
-                        <Image
-                          src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
-                          alt={item.voteItem.name}
-                          fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                      <div className="absolute -top-6 -left-6 flex items-center justify-center">
-                        <div className={`${style.badge} rounded-full flex items-center justify-center text-white font-bold text-2xl z-10`}>
-                          <div className={`rounded-full flex items-center justify-center border-2 ${
-                            item.rank === 1 ? 'w-12 h-12' : 'w-10 h-10'
-                          }`}
-                            style={{
-                              borderColor: item.rank === 1 ? '#FFC000' : 
-                                         item.rank === 2 ? '#D0D0D0' : 
-                                         '#D98C4A'
-                            }}
-                          >
-                            {item.rank}
-                          </div>
+            {[top3Items[1], top3Items[0], top3Items[2]]
+              .filter(item => item) // Filter out any undefined items
+              .map((item, index) => {
+                if (!item) return null; // Additional safety check
+                const style = item.rank === 1 ? medalStyles.first : 
+                           item.rank === 2 ? medalStyles.second : 
+                           medalStyles.third;
+                return (
+                  <div key={item.voteItem.id} className="flex flex-col-reverse items-center justify-start w-1/3 group">
+                    <div className={`relative rounded-xl shadow-xl w-full ${style.card} transform transition-all duration-300 hover:scale-[1.02] ${
+                      index === 0 ? 'md:order-2' : 
+                      index === 1 ? 'md:order-1' : 
+                      'md:order-3'
+                    }`}>
+                      <div className="relative">
+                        <div className={`relative ${style.image} mb-4 overflow-hidden rounded-t-xl h-[436px]`}>
+                          <Image
+                            src={imageUrls[item.voteItem.image] || getPublicUrl(item.voteItem.image)}
+                            alt={item.voteItem.name}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                         </div>
-                        {item.rank === 1 && (
-                          <div className="absolute -top-6 text-4xl z-20">
-                            {style.crown}
+                        <div className="absolute -top-6 -left-6 flex items-center justify-center">
+                          <div className={`${style.badge} rounded-full flex items-center justify-center text-white font-bold text-2xl z-10`}>
+                            <div className={`rounded-full flex items-center justify-center border-2 ${
+                              item.rank === 1 ? 'w-12 h-12' : 'w-10 h-10'
+                            }`}
+                              style={{
+                                borderColor: item.rank === 1 ? '#FFC000' : 
+                                           item.rank === 2 ? '#D0D0D0' : 
+                                           '#D98C4A'
+                              }}
+                            >
+                              {item.rank}
+                            </div>
                           </div>
-                        )}
+                          {item.rank === 1 && (
+                            <div className="absolute -top-6 text-4xl z-20">
+                              {style.crown}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="p-6">
+                        <h3 className={`${style.text} font-bold mb-3 flex items-center gap-2`}>
+                          {item.voteItem.name}
+                        </h3>
+                        <p className="text-gray-600 mb-4">{item.voteItem.description}</p>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center gap-2">
+                            <span className={style.votes}>
+                              {item.voteCount.toLocaleString()}표
+                            </span>
+                          </div>
+                          {selectedItem === item.voteItem.id && !isVoting ? (
+                            <button
+                              onClick={() => handleRemoveVote(item.voteItem.id)}
+                              disabled={isVoting}
+                              className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1"
+                            >
+                              ✓ 투표 완료
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => hasVoted ? handleChangeVote(item.voteItem.id) : handleVote(item.voteItem.id)}
+                              disabled={isVoting}
+                              className={`${
+                                isVoting 
+                                  ? 'bg-gray-300 cursor-not-allowed' 
+                                  : 'bg-blue-500 hover:bg-blue-600'
+                              } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105`}
+                            >
+                              {isVoting ? '투표 중...' : '투표하기'}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
-                    <div className="p-6">
-                      <h3 className={`${style.text} font-bold mb-3 flex items-center gap-2`}>
-                        {item.voteItem.name}
-                      </h3>
-                      <p className="text-gray-600 mb-4">{item.voteItem.description}</p>
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
-                          <span className={style.votes}>
-                            {item.voteCount.toLocaleString()}표
-                          </span>
-                        </div>
-                        {selectedItem === item.voteItem.id && !isVoting ? (
-                          <button
-                            onClick={() => handleRemoveVote(item.voteItem.id)}
-                            disabled={isVoting}
-                            className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1"
-                          >
-                            ✓ 투표 완료
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => hasVoted ? handleChangeVote(item.voteItem.id) : handleVote(item.voteItem.id)}
-                            disabled={isVoting}
-                            className={`${
-                              isVoting 
-                                ? 'bg-gray-300 cursor-not-allowed' 
-                                : 'bg-blue-500 hover:bg-blue-600'
-                            } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105`}
-                          >
-                            {isVoting ? '투표 중...' : '투표하기'}
-                          </button>
-                        )}
+                    <div className={`w-full relative ${
+                      item.rank === 1 ? 'h-[200px] bg-yellow-400/20' :  // 5 * 40px
+                      item.rank === 2 ? 'h-[160px] bg-gray-400/20' :   // 4 * 40px
+                      'h-[120px] bg-orange-400/20'                 // 3 * 40px
+                    }`}>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className="text-4xl font-bold text-gray-600/50">
+                          {item.rank}
+                        </span>
                       </div>
                     </div>
                   </div>
-                  <div className={`w-full relative ${
-                    item.rank === 1 ? 'h-[200px] bg-yellow-400/20' :  // 5 * 40px
-                    item.rank === 2 ? 'h-[160px] bg-gray-400/20' :   // 4 * 40px
-                    'h-[120px] bg-orange-400/20'                 // 3 * 40px
-                  }`}>
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-4xl font-bold text-gray-600/50">
-                        {item.rank}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
           </div>
         </div>
 
