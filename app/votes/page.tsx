@@ -78,13 +78,10 @@ export default function VotesPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden">
-                <div className="relative h-48">
+              <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden h-96">
+                <div className="relative h-64">
                   <div className="relative h-full overflow-hidden">
                     <Skeleton variant="image" className="h-full w-full" />
-                  </div>
-                  <div className="absolute right-2 top-2">
-                    <Skeleton variant="button" className="w-10 h-10 rounded-full" />
                   </div>
                 </div>
                 <div className="p-4">

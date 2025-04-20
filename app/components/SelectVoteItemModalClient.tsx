@@ -53,7 +53,7 @@ export default function SelectVoteItemModalClient({
                   투표 항목 선택
                 </Dialog.Title>
                 <div className="mt-4">
-                  <div className="space-y-4">
+                  <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
                     {items.map((item) => (
                       <div
                         key={item.id}

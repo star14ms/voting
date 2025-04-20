@@ -195,7 +195,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
         <div className="w-full max-w-6xl">
           <div className="bg-white rounded-lg shadow p-6 mb-8">
             <div className="text-center">
-              <Skeleton variant="image" className="h-64 w-full mb-6" />
+              <Skeleton variant="image" className="h-96 w-full mb-6" />
               <Skeleton variant="text" className="h-8 w-3/4 mx-auto mb-4" />
               <Skeleton variant="text" className="h-4 w-1/2 mx-auto" />
             </div>
@@ -390,7 +390,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
       <div className="w-full max-w-6xl">
         <div className="bg-white rounded-lg shadow p-6 mb-8">
           <div className="text-center">
-            <div className="relative h-64 w-full mb-6">
+            <div className="relative h-96 w-full mb-6">
               <Image
                 src={imageUrls[vote.image] || getPublicUrl(vote.image)}
                 alt={vote.title}

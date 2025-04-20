@@ -138,9 +138,11 @@ export default function CreateVotePage() {
   };
 
   const handleRemoveItem = (index: number) => {
-    if (existingVoteItems.length > 1) {
+    if (existingVoteItems.length > 2) {
       const newItems = existingVoteItems.filter((_, i) => i !== index);
       setExistingVoteItems(newItems);
+    } else {
+      alert('투표 항목은 최소 2개 이상이어야 합니다.');
     }
   };
 
@@ -171,6 +173,7 @@ export default function CreateVotePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
 
     try {
       const formData = new FormData();
@@ -190,13 +193,17 @@ export default function CreateVotePage() {
       }
 
       // Add modified or new items
-      existingVoteItems.forEach((item, index) => {
-        if (item.id === 0 || modifiedItems.has(item.id)) {
-          formData.append(`items[${index}].name`, item.name);
-          formData.append(`items[${index}].description`, item.description);
-          formData.append(`items[${index}].image`, item.image);
-        }
-      });
+      const newItems = existingVoteItems
+        .filter(item => item.id === 0 || modifiedItems.has(item.id))
+        .map(item => ({
+          name: item.name,
+          description: item.description,
+          image: item.image
+        }));
+
+      if (newItems.length > 0) {
+        formData.append('newItems', JSON.stringify(newItems));
+      }
 
       const result = await createVote(formData);
       if (result.id) {
@@ -339,45 +346,46 @@ export default function CreateVotePage() {
 
           {/* Vote Items */}
           <div className="bg-white rounded-xl p-6 shadow">
-            <div className="mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">투표 항목</h2>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {existingVoteItems.map((item, index) => (
-                <div key={index} className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex space-x-1">
-                        <button
-                          type="button"
-                          onClick={() => handleMoveItem(index, 'up')}
-                          disabled={index === 0}
-                          className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          ↑
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMoveItem(index, 'down')}
-                          disabled={index === existingVoteItems.length - 1}
-                          className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          ↓
-                        </button>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">투표 항목</h2>
+                <span className="text-sm text-gray-500">최소 2개 이상의 항목이 필요합니다</span>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {existingVoteItems.map((item, index) => (
+                  <div key={index} className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex space-x-1">
+                          <button
+                            type="button"
+                            onClick={() => handleMoveItem(index, 'up')}
+                            disabled={index === 0}
+                            className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            ↑
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleMoveItem(index, 'down')}
+                            disabled={index === existingVoteItems.length - 1}
+                            className="text-gray-500 hover:text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            ↓
+                          </button>
+                        </div>
                       </div>
+                      {existingVoteItems.length > 2 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveItem(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          X
+                        </button>
+                      )}
                     </div>
-                    {existingVoteItems.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveItem(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        X
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         이름
@@ -398,7 +406,6 @@ export default function CreateVotePage() {
                         value={item.description}
                         onChange={(e) => handleItemChange(index, 'description', e.target.value)}
                         className="w-full px-3 py-2 border rounded-md text-gray-900"
-                        required
                       />
                     </div>
                     <div>
@@ -410,7 +417,6 @@ export default function CreateVotePage() {
                         accept="image/*"
                         onChange={(e) => handleItemImageChange(e, index)}
                         className="w-full px-3 py-2 border rounded-md text-gray-900"
-                        required={!item.id}
                       />
                       {item.image && (
                         <div className="mt-2">
@@ -436,12 +442,11 @@ export default function CreateVotePage() {
                       </button>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Add Item Button */}
           <div className="flex justify-center">
             <button
               type="button"

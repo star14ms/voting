@@ -29,6 +29,9 @@ export async function deleteVoteItem(id: number) {
 
 export async function getVoteItems() {
   return prisma.voteItem.findMany({
+    include: {
+      voteItemVote: true,
+    },
     orderBy: {
       createdAt: 'desc',
     },

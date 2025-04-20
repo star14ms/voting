@@ -68,19 +68,6 @@ export default function HomePage() {
                   <div className="relative h-full overflow-hidden">
                     <Skeleton variant="image" className="h-full w-full" />
                   </div>
-                  <div className="absolute right-2 top-2">
-                    <Skeleton variant="button" className="w-10 h-10 rounded-full" />
-                  </div>
-                </div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Skeleton variant="text" className="h-6 w-12" />
-                    <Skeleton variant="text" className="h-6 w-3/4" />
-                  </div>
-                  <Skeleton variant="text" className="h-4 w-full mb-4" />
-                  <div className="flex justify-end">
-                    <Skeleton variant="text" className="h-4 w-48" />
-                  </div>
                 </div>
               </div>
             ))}

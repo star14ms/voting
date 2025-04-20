@@ -16,6 +16,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 type VoteItemWithStringDates = Omit<VoteItem, 'createdAt' | 'updatedAt'> & {
   createdAt: string;
   updatedAt: string;
+  voteItemVote: { id: number }[];
 };
 
 export default function VoteItemsPage() {
@@ -82,7 +83,7 @@ export default function VoteItemsPage() {
                 className="bg-red-100 hover:bg-red-200 text-red-900 px-4 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={isDeletingUnused}
               >
-                {isDeletingUnused ? '삭제 중...' : '사용되지 않는 항목 삭제'}
+                {isDeletingUnused ? '삭제 중...' : '미사용 항목 모두 삭제'}
               </button>
               <Link
                 href="/vote-items/create"
@@ -118,7 +119,7 @@ export default function VoteItemsPage() {
                 as="h3"
                 className="text-lg font-medium leading-6 text-gray-900"
               >
-                사용되지 않는 항목 삭제
+                미사용 항목 모두 삭제
               </Dialog.Title>
 
               <div className="mt-4">
@@ -210,7 +211,7 @@ export default function VoteItemsPage() {
                       <p className="text-sm text-gray-500">{item.description}</p>
                     </div>
                     <div className="flex justify-end">
-                      {session?.status === 'authenticated' && (
+                      {session?.status === 'authenticated' && item.voteItemVote.length === 0 && (
                         <button
                           onClick={() => handleDelete(item.id)}
                           className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"

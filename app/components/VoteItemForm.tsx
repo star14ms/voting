@@ -60,13 +60,13 @@ export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              설명
+              설명 <span className="text-gray-500 text-sm">(선택사항)</span>
             </label>
             <textarea
               name="description"
-              required
               rows={3}
               className="w-full px-3 py-2 border rounded-md text-gray-900"
+              placeholder="설명을 입력하세요 (선택사항)"
             />
           </div>
 
