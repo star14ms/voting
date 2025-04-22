@@ -55,6 +55,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [isVoteActive, setIsVoteActive] = useState(false);
 
   useEffect(() => {
     if (!params?.id) {
@@ -76,6 +77,12 @@ export default function VotePage({ params }: { params: { id: string } }) {
         }
         
         setVote(data);
+        
+        // Check if vote is active
+        const now = new Date();
+        const startDate = new Date(data.startDate);
+        const endDate = new Date(data.endDate);
+        setIsVoteActive(now >= startDate && now <= endDate);
         
         // Check if user has already voted
         if (session?.user?.id) {
@@ -403,6 +410,11 @@ export default function VotePage({ params }: { params: { id: string } }) {
             <h1 className="text-3xl font-bold text-gray-900 mb-4">{vote.title}</h1>
             <div className="text-sm text-gray-500">
               <span>투표 기간: {vote.startDate.toLocaleDateString()} ({vote.startDate.toLocaleDateString('ko-KR', { weekday: 'short' })}) - {vote.endDate.toLocaleDateString()} ({vote.endDate.toLocaleDateString('ko-KR', { weekday: 'short' })})</span>
+              {!isVoteActive && (
+                <div className="mt-2 text-red-500 font-medium">
+                  {new Date() < new Date(vote.startDate) ? '투표가 아직 시작되지 않았습니다.' : '투표가 종료되었습니다.'}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -472,22 +484,22 @@ export default function VotePage({ params }: { params: { id: string } }) {
                           {selectedItem === item.voteItem.id && !isVoting ? (
                             <button
                               onClick={() => handleRemoveVote(item.voteItem.id)}
-                              disabled={isVoting}
-                              className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1 h-[32px]"
+                              disabled={isVoting || !isVoteActive}
+                              className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors h-full flex items-center gap-1"
                             >
                               ✓ 투표 완료
                             </button>
                           ) : (
                             <button
                               onClick={() => hasVoted ? handleChangeVote(item.voteItem.id) : handleVote(item.voteItem.id)}
-                              disabled={isVoting}
+                              disabled={isVoting || !isVoteActive}
                               className={`${
-                                isVoting 
+                                isVoting || !isVoteActive
                                   ? 'bg-gray-300 cursor-not-allowed' 
                                   : 'bg-blue-500 hover:bg-blue-600'
-                              } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-[32px] flex items-center justify-center h-full`}
+                              } text-white px-4 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-full flex items-center justify-center`}
                             >
-                              {isVoting ? '투표 중...' : '투표하기'}
+                              {isVoting ? '투표 중...' : isVoteActive ? '투표하기' : '투표 불가'}
                             </button>
                           )}
                         </div>
@@ -572,22 +584,22 @@ export default function VotePage({ params }: { params: { id: string } }) {
                         {selectedItem === item.voteItem.id && !isVoting ? (
                           <button
                             onClick={() => handleRemoveVote(item.voteItem.id)}
-                            disabled={isVoting}
-                            className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1 h-full"
+                            disabled={isVoting || !isVoteActive}
+                            className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors h-full flex items-center gap-1"
                           >
                             ✓ 투표 완료
                           </button>
                         ) : (
                           <button
                             onClick={() => hasVoted ? handleChangeVote(item.voteItem.id) : handleVote(item.voteItem.id)}
-                            disabled={isVoting}
+                            disabled={isVoting || !isVoteActive}
                             className={`${
-                              isVoting 
+                              isVoting || !isVoteActive
                                 ? 'bg-gray-300 cursor-not-allowed' 
                                 : 'bg-blue-500 hover:bg-blue-600'
-                            } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-[32px] flex items-center justify-center h-full`}
+                            } text-white px-4 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-full flex items-center justify-center`}
                           >
-                            {isVoting ? '투표 중...' : '투표하기'}
+                            {isVoting ? '투표 중...' : isVoteActive ? '투표하기' : '투표 불가'}
                           </button>
                         )}
                       </div>
