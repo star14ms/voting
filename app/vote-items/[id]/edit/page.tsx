@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import VoteItemForm from '@/app/components/VoteItemForm';
 import { getVoteItem, updateVoteItem } from '@/lib/actions/vote-items';
 import { VoteItem } from '@prisma/client';
-import { getPublicUrl } from '@/lib/s3';
 
 export default function EditVoteItemPage({ params }: { params: { id: string } }) {
   const router = useRouter();

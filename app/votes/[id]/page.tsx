@@ -473,7 +473,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                             <button
                               onClick={() => handleRemoveVote(item.voteItem.id)}
                               disabled={isVoting}
-                              className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1"
+                              className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1 h-[32px]"
                             >
                               ✓ 투표 완료
                             </button>
@@ -485,7 +485,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                                 isVoting 
                                   ? 'bg-gray-300 cursor-not-allowed' 
                                   : 'bg-blue-500 hover:bg-blue-600'
-                              } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105`}
+                              } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-[32px] flex items-center justify-center h-full`}
                             >
                               {isVoting ? '투표 중...' : '투표하기'}
                             </button>
@@ -561,16 +561,19 @@ export default function VotePage({ params }: { params: { id: string } }) {
                         {status === 'authenticated' && (
                           <Link
                             href={`/vote-items/${item.voteItem.id}/edit`}
-                            className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+                            className="absolute top-4 right-4 bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                            title="수정"
                           >
-                            수정
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                            </svg>
                           </Link>
                         )}
                         {selectedItem === item.voteItem.id && !isVoting ? (
                           <button
                             onClick={() => handleRemoveVote(item.voteItem.id)}
                             disabled={isVoting}
-                            className="text-sm font-medium text-green-600 bg-green-50 px-4 py-2 rounded-lg hover:bg-green-100 transition-colors flex items-center gap-1"
+                            className="text-sm font-medium text-green-600 bg-green-50 px-3 py-2 rounded-full hover:bg-green-100 transition-colors flex items-center gap-1 h-full"
                           >
                             ✓ 투표 완료
                           </button>
@@ -582,7 +585,7 @@ export default function VotePage({ params }: { params: { id: string } }) {
                               isVoting 
                                 ? 'bg-gray-300 cursor-not-allowed' 
                                 : 'bg-blue-500 hover:bg-blue-600'
-                            } text-white px-4 py-2 rounded-lg transition-colors`}
+                            } text-white px-6 py-2 rounded-full text-sm transition-all duration-300 transform hover:scale-105 h-[32px] flex items-center justify-center h-full`}
                           >
                             {isVoting ? '투표 중...' : '투표하기'}
                           </button>
