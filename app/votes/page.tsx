@@ -8,12 +8,17 @@ import Skeleton from '../components/Skeleton';
 import VoteCard from '@/app/components/VoteCard';
 import { useSession } from 'next-auth/react';
 import SeedButton from '../components/SeedButton';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { deleteVote } from '@/lib/actions/votes';
 
 export default function VotesPage() {
   const [votes, setVotes] = useState<VoteResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const session = useSession();
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchVotes = async () => {
     try {
@@ -22,6 +27,21 @@ export default function VotesPage() {
     } catch (err) {
       console.error('Error fetching votes:', err);
       setError(err instanceof Error ? err.message : 'Failed to fetch votes');
+    }
+  };
+
+  const handleDelete = async (voteId: string) => {
+    if (!confirm('정말로 이 투표를 삭제하시겠습니까?')) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteVote(voteId);
+      setVotes(votes.filter(vote => String(vote.id) !== voteId));
+    } catch (error) {
+      console.error('Failed to delete vote:', error);
+      alert('투표 삭제에 실패했습니다.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -42,6 +62,18 @@ export default function VotesPage() {
       window.removeEventListener('voteDeleted', handleVoteChange);
     };
   }, []);
+
+  const now = new Date();
+  const activeVotes = votes.filter(vote => {
+    const startDate = new Date(vote.startDate);
+    const endDate = new Date(vote.endDate);
+    return now >= startDate && now <= endDate;
+  });
+
+  const completedVotes = votes.filter(vote => {
+    const endDate = new Date(vote.endDate);
+    return now > endDate;
+  });
 
   if (error) {
     return (
@@ -97,16 +129,29 @@ export default function VotesPage() {
               </div>
             ))}
           </div>
-        ) : votes.length === 0 ? (
+        ) : activeVotes.length === 0 ? (
           <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-gray-500 text-center">아직 생성된 투표가 없습니다.</p>
+            <p className="text-gray-500 text-center">진행중인 투표가 없습니다.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {votes.map((vote) => (
+            {activeVotes.map((vote) => (
               <VoteCard key={vote.id} vote={vote} />
             ))}
           </div>
+        )}
+
+        {completedVotes.length > 0 && (
+          <>
+            <div className="flex items-center justify-between mb-8 mt-12">
+              <h1 className="text-2xl font-bold text-gray-900">완료된 투표</h1>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {completedVotes.map((vote) => (
+                <VoteCard key={vote.id} vote={vote} />
+              ))}
+            </div>
+          </>
         )}
       </div>
     </div>
