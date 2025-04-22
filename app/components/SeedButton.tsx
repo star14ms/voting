@@ -5,11 +5,12 @@ import { Dialog } from '@headlessui/react';
 import { seedDatabase } from '@/lib/actions/seed';
 import { useRouter } from 'next/navigation';
 
-type SampleSet = 'cooking' | 'tvshows';
+type SampleSet = 'cooking' | 'tvshows' | 'maleactors';
 
 const sampleSetLabels: Record<SampleSet, string> = {
   cooking: '요리 프로그램 인기 투표',
-  tvshows: 'TV 프로그램 인기투표'
+  tvshows: 'TV 프로그램 인기투표',
+  maleactors: '남자 배우 인기 투표'
 };
 
 export default function SeedButton() {

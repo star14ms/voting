@@ -506,12 +506,16 @@ export default function VotePage({ params }: { params: { id: string } }) {
                       </div>
                     </div>
                     <div className={`w-full relative ${
-                      item.rank === 1 ? 'h-[200px] bg-yellow-400/20' :  // 5 * 40px
-                      item.rank === 2 ? 'h-[160px] bg-gray-400/20' :   // 4 * 40px
-                      'h-[120px] bg-orange-400/20'                 // 3 * 40px
+                      item.rank === 1 ? 'h-[200px] bg-gradient-to-b from-yellow-400/20 to-transparent' :  // 5 * 40px
+                      item.rank === 2 ? 'h-[160px] bg-gradient-to-b from-gray-400/20 to-transparent' :   // 4 * 40px
+                      'h-[120px] bg-gradient-to-b from-orange-400/20 to-transparent'                 // 3 * 40px
                     }`}>
                       <div className="absolute inset-0 flex items-center justify-center">
-                        <span className="text-4xl font-bold text-gray-600/50">
+                        <span className={`text-4xl font-bold ${
+                          item.rank === 1 ? 'text-yellow-600/50' :
+                          item.rank === 2 ? 'text-gray-600/50' :
+                          'text-orange-600/50'
+                        }`}>
                           {item.rank}
                         </span>
                       </div>

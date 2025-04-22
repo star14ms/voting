@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type SampleSet = 'cooking' | 'tvshows';
+type SampleSet = 'cooking' | 'tvshows' | 'maleactors';
 
 const sampleSets = {
   cooking: {
@@ -67,6 +67,65 @@ const sampleSets = {
         name: '보물섬',
         description: '미스터리한 스토리와 긴장감 넘치는 전개로 시청자를 사로잡는 주말 드라마.',
         image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745078288616-%E1%84%87%E1%85%A9%E1%84%86%E1%85%AE%E1%86%AF%E1%84%89%E1%85%A5%E1%86%B7.webp'
+      }
+    ]
+  },
+  maleactors: {
+    vote: {
+      title: '남자 배우 인기 투표',
+      type: 'CELEBRITY' as const,
+      image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299831553-%E1%84%82%E1%85%A1%E1%86%B7%E1%84%8C%E1%85%A1%E1%84%87%E1%85%A2%E1%84%8B%E1%85%AE+28%E1%84%8E%E1%85%A1.png', // This will be replaced with actual image
+    },
+    items: [
+      {
+        name: '추영우',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832602-%E1%84%8E%E1%85%AE%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%8B%E1%85%AE.png'
+      },
+      {
+        name: '주지훈',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832500-%E1%84%8C%E1%85%AE%E1%84%8C%E1%85%B5%E1%84%92%E1%85%AE%E1%86%AB.png'
+      },
+      {
+        name: '정해인',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832409-%E1%84%8C%E1%85%A5%E1%86%BC%E1%84%92%E1%85%A2%E1%84%8B%E1%85%B5%E1%86%AB.jpg'
+      },
+      {
+        name: '이준호',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832347-%E1%84%8B%E1%85%B5%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%92%E1%85%A9.jpg'
+      },
+      {
+        name: '이준혁',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832208-%E1%84%8B%E1%85%B5%E1%84%8C%E1%85%AE%E1%86%AB%E1%84%92%E1%85%A7%E1%86%A8.png'
+      },
+      {
+        name: '이동욱',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832167-%E1%84%8B%E1%85%B5%E1%84%83%E1%85%A9%E1%86%BC%E1%84%8B%E1%85%AE%E1%86%A8.jpeg'
+      },
+      {
+        name: '윤시윤',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299832103-%E1%84%8B%E1%85%B2%E1%86%AB%E1%84%89%E1%85%B5%E1%84%8B%E1%85%B2%E1%86%AB.jpg'
+      },
+      {
+        name: '엄태구',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299831981-%E1%84%8B%E1%85%A5%E1%86%B7%E1%84%90%E1%85%A2%E1%84%80%E1%85%AE.png'
+      },
+      {
+        name: '변우석',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299831854-%E1%84%87%E1%85%A7%E1%86%AB%E1%84%8B%E1%85%AE%E1%84%89%E1%85%A5%E1%86%A8.png'
+      },
+      {
+        name: '로운',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299831791-%E1%84%85%E1%85%A9%E1%84%8B%E1%85%AE%E1%86%AB.jpg'
       }
     ]
   }
