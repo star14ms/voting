@@ -21,6 +21,13 @@ function calculateDday(endDate: Date) {
   return diffDays;
 }
 
+function calculateDaysUntilStart(startDate: Date) {
+  const today = new Date();
+  const diffTime = startDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+}
+
 export default function VoteCard({ vote }: VoteCardProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const router = useRouter();
@@ -31,13 +38,31 @@ export default function VoteCard({ vote }: VoteCardProps) {
     setShowDeleteConfirm(true);
   };
 
+  const getStatusBadge = () => {
+    const now = new Date();
+    const startDate = new Date(vote.startDate);
+    const endDate = new Date(vote.endDate);
+
+    if (now < startDate) {
+      const daysUntilStart = calculateDaysUntilStart(startDate);
+      return `시작 D-${daysUntilStart}`;
+    } else if (now > endDate) {
+      return null;
+    } else {
+      const daysRemaining = calculateDday(endDate);
+      return `D-${daysRemaining}`;
+    }
+  };
+
+  const statusBadge = getStatusBadge();
+
   return (
     <div className="relative bg-white rounded-lg shadow-md overflow-hidden group">
       <Link
         href={`/votes/${vote.id}`}
         className="block bg-white rounded-xl shadow hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
       >
-        <div className="relative h-96 overflow-hidden">
+        <div className="relative w-full aspect-[16/9] overflow-hidden">
           <Image
             src={getPublicUrl(vote.image)}
             alt={vote.title}
@@ -47,6 +72,13 @@ export default function VoteCard({ vote }: VoteCardProps) {
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          {statusBadge && (
+            <div className="absolute top-4 left-4">
+              <div className="bg-white/90 text-gray-900 px-3 py-1 rounded-full text-sm font-medium">
+                {statusBadge}
+              </div>
+            </div>
+          )}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-0 group-hover:translate-y-[-10px] transition-transform duration-300">
             <h3 className="text-2xl font-bold mb-2">{vote.title}</h3>
             <p className="text-sm text-white/80">

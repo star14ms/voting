@@ -56,6 +56,42 @@ export default function VotePage({ params }: { params: { id: string } }) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [isVoteActive, setIsVoteActive] = useState(false);
+  const [remainingTime, setRemainingTime] = useState<string>('');
+
+  const updateRemainingTime = () => {
+    if (!vote) return;
+    
+    const now = new Date();
+    const endDate = new Date(vote.endDate);
+    const diffTime = endDate.getTime() - now.getTime();
+    
+    if (diffTime <= 0) {
+      setRemainingTime('종료');
+      setIsVoteActive(false);
+      return;
+    }
+    
+    const days = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+    
+    if (days > 0) {
+      setRemainingTime(`D-${days}`);
+    } else if (hours > 0) {
+      setRemainingTime(`${hours}시간 ${minutes}분`);
+    } else {
+      setRemainingTime(`${minutes}분`);
+    }
+  };
+
+  useEffect(() => {
+    if (!vote) return;
+    
+    updateRemainingTime();
+    const interval = setInterval(updateRemainingTime, 60000); // Update every minute
+    
+    return () => clearInterval(interval);
+  }, [vote]);
 
   useEffect(() => {
     if (!params?.id) {
@@ -407,7 +443,14 @@ export default function VotePage({ params }: { params: { id: string } }) {
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">{vote.title}</h1>
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <h1 className="text-3xl font-bold text-gray-900">{vote.title}</h1>
+              {isVoteActive && remainingTime && (
+                <div className="bg-blue-100 text-blue-900 px-3 py-1 rounded-full text-sm font-medium">
+                  {remainingTime}
+                </div>
+              )}
+            </div>
             <div className="text-sm text-gray-500">
               <span>투표 기간: {vote.startDate.toLocaleDateString()} ({vote.startDate.toLocaleDateString('ko-KR', { weekday: 'short' })}) - {vote.endDate.toLocaleDateString()} ({vote.endDate.toLocaleDateString('ko-KR', { weekday: 'short' })})</span>
               {!isVoteActive && (
