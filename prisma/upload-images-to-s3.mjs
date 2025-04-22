@@ -40,7 +40,7 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = process.env.AWS_BUCKET_NAME;
-const TARGET_FOLDER = join(__dirname, '../public/images/sample3/'); // Adjust this path as needed
+const TARGET_FOLDER = join(__dirname, '../public/images/sample4/'); // Adjust this path as needed
 
 console.log('S3 Configuration:');
 console.log(`- Region: ${process.env.AWS_REGION}`);

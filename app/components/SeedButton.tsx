@@ -5,17 +5,16 @@ import { Dialog } from '@headlessui/react';
 import { seedDatabase } from '@/lib/actions/seed';
 import { useRouter } from 'next/navigation';
 
-type SampleSet = 'cooking' | 'tvshows' | 'maleactors';
+type SampleSet = 'maleactors' | 'maletrot';
 
 const sampleSetLabels: Record<SampleSet, string> = {
-  cooking: '요리 프로그램 인기 투표',
-  tvshows: 'TV 프로그램 인기투표',
-  maleactors: '남자 배우 인기 투표'
+  maleactors: '남자 배우 인기 투표',
+  maletrot: '남자 트로트스타 인기 투표'
 };
 
 export default function SeedButton() {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedSet, setSelectedSet] = useState<SampleSet>('cooking');
+  const [selectedSet, setSelectedSet] = useState<SampleSet>('maleactors');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 

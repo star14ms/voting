@@ -4,7 +4,7 @@ import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-type SampleSet = 'cooking' | 'tvshows' | 'maleactors';
+type SampleSet = 'cooking' | 'tvshows' | 'maleactors' | 'maletrot';
 
 const sampleSets = {
   cooking: {
@@ -126,6 +126,65 @@ const sampleSets = {
         name: '로운',
         description: '',
         image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745299831791-%E1%84%85%E1%85%A9%E1%84%8B%E1%85%AE%E1%86%AB.jpg'
+      }
+    ]
+  },
+  maletrot: {
+    vote: {
+      title: '남자 트로트스타 인기 투표',
+      type: 'CELEBRITY' as const,
+      image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301141840-%E1%84%82%E1%85%A1%E1%86%B7%E1%84%8C%E1%85%A1+%E1%84%90%E1%85%B3%E1%84%85%E1%85%A9%E1%84%90%E1%85%B3%E1%84%89%E1%85%B3%E1%84%90%E1%85%A1.png',
+    },
+    items: [
+      {
+        name: '황영웅',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142842-%E1%84%92%E1%85%AA%E1%86%BC%E1%84%8B%E1%85%A7%E1%86%BC%E1%84%8B%E1%85%AE%E1%86%BC.png'
+      },
+      {
+        name: '진욱',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142720-%E1%84%8C%E1%85%B5%E1%86%AB%E1%84%8B%E1%85%AE%E1%86%A8.png'
+      },
+      {
+        name: '장민호',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142567-%E1%84%8C%E1%85%A1%E1%86%BC%E1%84%86%E1%85%B5%E1%86%AB%E1%84%92%E1%85%A9.png'
+      },
+      {
+        name: '유지우',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142522-%E1%84%8B%E1%85%B2%E1%84%8C%E1%85%B5%E1%84%8B%E1%85%AE.png'
+      },
+      {
+        name: '안성훈',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142386-%E1%84%8B%E1%85%A1%E1%86%AB%E1%84%89%E1%85%A5%E1%86%BC%E1%84%92%E1%85%AE%E1%86%AB.png'
+      },
+      {
+        name: '손태진',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142239-%E1%84%89%E1%85%A9%E1%86%AB%E1%84%90%E1%85%A2%E1%84%8C%E1%85%B5%E1%86%AB.png'
+      },
+      {
+        name: '박지현',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301142112-%E1%84%87%E1%85%A1%E1%86%A8%E1%84%8C%E1%85%B5%E1%84%92%E1%85%A7%E1%86%AB.png'
+      },
+      {
+        name: '박서진',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301141965-%E1%84%87%E1%85%A1%E1%86%A8%E1%84%89%E1%85%A5%E1%84%8C%E1%85%B5%E1%86%AB.png'
+      },
+      {
+        name: '김용빈',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301141781-%E1%84%80%E1%85%B5%E1%86%B7%E1%84%8B%E1%85%AD%E1%86%BC%E1%84%87%E1%85%B5%E1%86%AB.png'
+      },
+      {
+        name: '강문경',
+        description: '',
+        image: 'https://voting-korea.s3.ap-northeast-2.amazonaws.com/images/1745301141556-%E1%84%80%E1%85%A1%E1%86%BC%E1%84%86%E1%85%AE%E1%86%AB%E1%84%80%E1%85%A7%E1%86%BC.png'
       }
     ]
   }
