@@ -14,8 +14,18 @@ export default function HomePage() {
   const fetchVotes = async () => {
     try {
       const data = await getVotes();
+      // Filter votes that are currently active
+      const now = new Date();
+      const activeVotes = data.filter(vote => {
+        const startDate = new Date(vote.startDate);
+        const endDate = new Date(vote.endDate);
+        return now >= startDate && now <= endDate;
+      });
       // Sort by vote count and take top 3
-      const sortedVotes = [...data].sort((a, b) => b.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0) - a.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0)).slice(0, 3);
+      const sortedVotes = [...activeVotes].sort((a, b) => 
+        b.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0) - 
+        a.voteItemVote.reduce((sum, item) => sum + item.voteCount, 0)
+      ).slice(0, 3);
       setVotes(sortedVotes);
     } catch (err) {
       console.error('Error fetching votes:', err);
@@ -25,20 +35,6 @@ export default function HomePage() {
 
   useEffect(() => {
     fetchVotes().finally(() => setIsLoading(false));
-  }, []);
-
-  useEffect(() => {
-    const handleVoteChange = () => {
-      fetchVotes();
-    };
-
-    window.addEventListener('voteCreated', handleVoteChange);
-    window.addEventListener('voteDeleted', handleVoteChange);
-
-    return () => {
-      window.removeEventListener('voteCreated', handleVoteChange);
-      window.removeEventListener('voteDeleted', handleVoteChange);
-    };
   }, []);
 
   if (error) {
