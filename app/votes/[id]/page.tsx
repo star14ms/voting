@@ -557,7 +557,15 @@ export default function VotePage({ params }: { params: { id: string } }) {
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-lg font-bold text-gray-700">{item.voteCount.toLocaleString()}표</span>
-                      <div className="w-24 text-right">
+                      <div className="flex gap-2">
+                        {status === 'authenticated' && (
+                          <Link
+                            href={`/vote-items/${item.voteItem.id}/edit`}
+                            className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-lg transition-colors text-sm"
+                          >
+                            수정
+                          </Link>
+                        )}
                         {selectedItem === item.voteItem.id && !isVoting ? (
                           <button
                             onClick={() => handleRemoveVote(item.voteItem.id)}
@@ -592,13 +600,19 @@ export default function VotePage({ params }: { params: { id: string } }) {
           <div></div>
           {status === 'authenticated' && (
             <div className="flex gap-2">
+              <Link
+                href={`/votes/${params.id}/edit`}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                수정하기
+              </Link>
               <button
                 onClick={handleResetVotes}
                 disabled={isResetting}
                 className={`${
                   isResetting 
                     ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-red-500 hover:bg-red-600'
+                    : 'bg-yellow-500 hover:bg-yellow-600'
                 } text-white px-4 py-2 rounded-lg transition-colors`}
               >
                 {isResetting ? '초기화 중...' : '투표 초기화'}
@@ -609,10 +623,10 @@ export default function VotePage({ params }: { params: { id: string } }) {
                 className={`${
                   isDeleting 
                     ? 'bg-gray-300 cursor-not-allowed' 
-                    : 'bg-red-700 hover:bg-red-800'
+                    : 'bg-red-500 hover:bg-red-600'
                 } text-white px-4 py-2 rounded-lg transition-colors`}
               >
-                {isDeleting ? '삭제 중...' : '투표 삭제'}
+                {isDeleting ? '삭제 중...' : '삭제하기'}
               </button>
             </div>
           )}

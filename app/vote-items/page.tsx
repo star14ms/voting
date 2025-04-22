@@ -76,7 +76,7 @@ export default function VoteItemsPage() {
       <div className="w-full max-w-6xl">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold text-gray-900">투표 항목 관리</h1>
-          {session?.status === 'authenticated' && (
+          {session.data && (
             <div className="flex space-x-4">
               <button
                 onClick={() => setShowDeleteConfirm(true)}
@@ -210,14 +210,24 @@ export default function VoteItemsPage() {
                       <h3 className="text-lg font-medium text-gray-900 mb-2">{item.name}</h3>
                       <p className="text-sm text-gray-500">{item.description}</p>
                     </div>
-                    <div className="flex justify-end">
-                      {session?.status === 'authenticated' && item.voteItemVote.length === 0 && (
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                        >
-                          삭제
-                        </button>
+                    <div className="flex justify-end space-x-2">
+                      {session.data && (
+                        <>
+                          <Link
+                            href={`/vote-items/${item.id}/edit`}
+                            className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                          >
+                            수정
+                          </Link>
+                          {item.voteItemVote.length === 0 && (
+                            <button
+                              onClick={() => handleDelete(item.id)}
+                              className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            >
+                              삭제
+                            </button>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>

@@ -7,12 +7,17 @@ import { getPublicUrl } from '@/lib/s3';
 
 type VoteItemFormProps = {
   onSubmit: (formData: FormData) => Promise<void>;
+  initialData?: {
+    name: string;
+    description?: string;
+    image?: string;
+  };
 };
 
-export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
+export default function VoteItemForm({ onSubmit, initialData }: VoteItemFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
+  const [imagePreview, setImagePreview] = useState<string>(initialData?.image || '');
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,6 +59,7 @@ export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
               type="text"
               name="name"
               required
+              defaultValue={initialData?.name}
               className="w-full px-3 py-2 border rounded-md text-gray-900"
             />
           </div>
@@ -65,6 +71,7 @@ export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
             <textarea
               name="description"
               rows={3}
+              defaultValue={initialData?.description}
               className="w-full px-3 py-2 border rounded-md text-gray-900"
               placeholder="설명을 입력하세요 (선택사항)"
             />
@@ -79,7 +86,7 @@ export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
               name="image"
               accept="image/*"
               onChange={handleImageChange}
-              required
+              required={!initialData?.image}
               className="w-full px-3 py-2 border rounded-md text-gray-900"
             />
             {imagePreview && (
@@ -117,7 +124,7 @@ export default function VoteItemForm({ onSubmit }: VoteItemFormProps) {
           disabled={isSubmitting}
           className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:opacity-50"
         >
-          {isSubmitting ? '생성 중...' : '생성'}
+          {isSubmitting ? '저장 중...' : '저장'}
         </button>
       </div>
     </form>

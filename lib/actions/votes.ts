@@ -23,7 +23,7 @@ export async function uploadFile(formData: FormData) {
 export async function createVote(formData: FormData) {
   try {
     const title = formData.get('title') as string;
-    const type = formData.get('type') as 'CELEBRITY' | 'TVSHOW';
+    const type = formData.get('type') as string;
     const startDate = formData.get('startDate') as string;
     const endDate = formData.get('endDate') as string;
     const image = formData.get('image') as string;
@@ -444,5 +444,148 @@ export async function deleteUnusedVoteItems() {
   } catch (error) {
     console.error('Error deleting unused vote items:', error);
     throw new Error('미사용 항목 삭제에 실패했습니다');
+  }
+}
+
+export async function updateVote(voteId: string, formData: FormData) {
+  try {
+    const title = formData.get('title') as string;
+    const type = formData.get('type') as string;
+    const startDate = formData.get('startDate') as string;
+    const endDate = formData.get('endDate') as string;
+    const image = formData.get('image') as string;
+    
+    // Get and validate existingItems
+    const existingItemsStr = formData.get('existingItems') as string;
+    const existingItems = existingItemsStr ? JSON.parse(existingItemsStr) : [];
+    if (!Array.isArray(existingItems)) {
+      throw new Error('기존 항목 데이터가 올바르지 않습니다');
+    }
+
+    // Get and validate newItems
+    const newItemsStr = formData.get('newItems') as string;
+    const newItems = newItemsStr ? JSON.parse(newItemsStr) : [];
+    if (!Array.isArray(newItems)) {
+      throw new Error('새 항목 데이터가 올바르지 않습니다');
+    }
+
+    // Validate required fields
+    if (!title || !type || !startDate || !endDate || !image) {
+      throw new Error('필수 항목이 누락되었습니다');
+    }
+
+    // Start a transaction to update the vote and its items
+    const updatedVote = await prisma.$transaction(async (tx) => {
+      // Update the vote
+      const vote = await tx.vote.update({
+        where: { id: Number(voteId) },
+        data: {
+          title,
+          type,
+          startDate: new Date(startDate),
+          endDate: new Date(endDate),
+          image,
+        },
+      });
+
+      // Get current vote items
+      const currentVoteItems = await tx.voteItemVote.findMany({
+        where: { voteId: Number(voteId) },
+        include: { voteItem: true },
+      });
+
+      // Delete vote items that are no longer in the list
+      const currentItemIds = currentVoteItems.map(item => item.voteItemId);
+      const newItemIds = [...existingItems, ...newItems.map(item => item.id)];
+      const itemsToDelete = currentItemIds.filter(id => !newItemIds.includes(id));
+
+      if (itemsToDelete.length > 0) {
+        await tx.voteItemVote.deleteMany({
+          where: {
+            voteId: Number(voteId),
+            voteItemId: { in: itemsToDelete },
+          },
+        });
+      }
+
+      // Handle existing items that are not in the current vote
+      for (const itemId of existingItems) {
+        const existingVoteItemVote = await tx.voteItemVote.findUnique({
+          where: {
+            voteItemId_voteId: {
+              voteItemId: itemId,
+              voteId: Number(voteId),
+            },
+          },
+        });
+
+        if (!existingVoteItemVote) {
+          // Create new voteItemVote for existing item
+          await tx.voteItemVote.create({
+            data: {
+              voteId: Number(voteId),
+              voteItemId: itemId,
+              voteCount: 0,
+            },
+          });
+        }
+      }
+
+      // Create new items and their voteItemVote records
+      if (newItems.length > 0) {
+        for (const item of newItems) {
+          if (item.id) {
+            // Update existing item
+            await tx.voteItem.update({
+              where: { id: item.id },
+              data: {
+                name: item.name,
+                description: item.description,
+                image: item.image,
+              },
+            });
+          } else {
+            // Create new item
+            const newVoteItem = await tx.voteItem.create({
+              data: {
+                name: item.name,
+                description: item.description,
+                image: item.image,
+              },
+            });
+
+            await tx.voteItemVote.create({
+              data: {
+                voteId: Number(voteId),
+                voteItemId: newVoteItem.id,
+                voteCount: 0,
+              },
+            });
+          }
+        }
+      }
+
+      // Return the complete updated vote
+      return tx.vote.findUnique({
+        where: { id: Number(voteId) },
+        include: {
+          voteItemVote: {
+            include: {
+              voteItem: true,
+            },
+          },
+        },
+      });
+    });
+
+    if (!updatedVote) {
+      throw new Error('투표를 찾을 수 없습니다');
+    }
+
+    revalidatePath(`/votes/${voteId}`);
+    return updatedVote;
+  } catch (error) {
+    console.error('Error updating vote:', error);
+    throw new Error('투표 수정에 실패했습니다');
   }
 } 

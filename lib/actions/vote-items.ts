@@ -62,4 +62,60 @@ export async function createVoteItem(formData: FormData) {
 
   revalidatePath('/vote-items');
   return voteItem;
+}
+
+export async function getVoteItem(id: number) {
+  const voteItem = await prisma.voteItem.findUnique({
+    where: { id },
+    include: {
+      voteItemVote: true,
+    },
+  });
+
+  if (!voteItem) {
+    throw new Error('투표 항목을 찾을 수 없습니다.');
+  }
+
+  return voteItem;
+}
+
+export async function updateVoteItem(id: number, formData: FormData) {
+  const name = formData.get('name') as string;
+  const description = formData.get('description') as string;
+  const imageFile = formData.get('image') as File;
+
+  if (!name) {
+    throw new Error('이름은 필수 입력 항목입니다.');
+  }
+
+  const existingVoteItem = await prisma.voteItem.findUnique({
+    where: { id },
+  });
+
+  if (!existingVoteItem) {
+    throw new Error('투표 항목을 찾을 수 없습니다.');
+  }
+
+  let imageUrl = existingVoteItem.image;
+
+  // If a new image is provided, upload it
+  if (imageFile && imageFile.size > 0) {
+    const imageFormData = new FormData();
+    imageFormData.append('file', imageFile);
+    const { url } = await uploadFile(imageFormData);
+    imageUrl = url;
+  }
+
+  const voteItem = await prisma.voteItem.update({
+    where: { id },
+    data: {
+      name,
+      description: description || undefined,
+      image: imageUrl,
+    },
+  });
+
+  revalidatePath('/vote-items');
+  revalidatePath(`/vote-items/${id}`);
+  return voteItem;
 } 
